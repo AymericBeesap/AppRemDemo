@@ -1,0 +1,27 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "com.groupea.remunerations",
+    "type": "application",
+    "title": "Gestion des Rémunérations",
+    "description": "Application de gestion des campagnes de rémunération (augmentations, bonus, GPEC)",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "dataSources": {}
+  },
+  "sap.ui": {
+    "technology": "React",
+    "icons": {
+      "icon": "sap-icon://employee"
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": false,
+      "phone": false
+    }
+  },
+  "sap.cloud": {
+    "service": "com.groupea.remunerations"
+  }
+}
