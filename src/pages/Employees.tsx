@@ -1,4 +1,9 @@
 import { useState } from 'react';
+// A FAIRE — Connexion S/4HANA : remplacer `employees` par getEmployees() de src/services/api.ts
+// Source primaire : S/4HANA API_EMPLOYEE_SRV (matricule, nom, entité, grade)
+//   + HCM_PAYRESULT_DISPLAY_SRV (salaire actuel — données GDPR sensibles)
+// Alternative : SuccessFactors EmpJob + EmpPayCompensation
+// Pour Manager : utiliser getEmployeesByManager(user.matricule) pour filtrer l'équipe
 import { employees, type Employee } from '../data/mockData';
 import { exportBsiPdf } from '../utils/pdfExport';
 

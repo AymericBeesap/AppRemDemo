@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// A FAIRE — Connexion CAP : remplacer `campaigns` par getCampaigns() de src/services/api.ts
+// GET /cap/odata/v4/RemunerationService/Campaigns?$expand=WorkflowEtapes
+// Filtrer par périmètre utilisateur : &$filter=entites/any(e: e eq '${user.entite}')
 import { campaigns, campaignStatusLabels, campaignTypeLabels, type CampaignType, type CampaignStatus } from '../data/mockData';
 
 const fmtEur = (n: number) =>

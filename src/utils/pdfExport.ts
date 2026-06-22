@@ -1,5 +1,10 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+// A FAIRE — Connexion CAP : les fonctions d'export PDF reçoivent leurs données en paramètre
+// (pattern déjà correct pour les exports audit). Pour les exports campagne/proposition :
+//   propositions → passer en paramètre depuis AugmentationDetail (via getPropositions() api.ts)
+//   campaigns    → passer en paramètre depuis la page appelante (via getCampaignById() api.ts)
+// Éviter d'importer des données depuis mockData directement dans les utilitaires.
 import type { AuditLog, AuditParam, AuditDroit, BudgetEvent, Employee } from '../data/mockData';
 import { propositions, campaigns } from '../data/mockData';
 

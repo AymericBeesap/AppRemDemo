@@ -1,4 +1,11 @@
 import { useState } from 'react';
+// A FAIRE — Connexion CAP : remplacer les imports mockData par des appels api.ts :
+//   auditLogs    → getAuditLogs(filters)   — CAP /AuditLogs (append-only, immuable)
+//   auditParams  → getAuditParams()        — CAP /AuditParams (historique des paramètres)
+//   auditDroits  → getAuditDroits()        — CAP /AuditDroits (historique des accès XSUAA)
+//   budgetEvents → getBudgetEvents()       — CAP /BudgetEvents (mouvements d'enveloppe)
+// Note : les AuditLogs CAP doivent être en écriture seule (pas de DELETE/UPDATE autorisé)
+// Configurer @readonly dans schema.cds et @requires('DRH','SIRH') pour la lecture
 import { auditLogs, auditParams, auditDroits, budgetEvents, type Role } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { exportAuditGeneralPdf, exportAuditParamsPdf, exportAuditDroitsPdf, exportAuditEnveloppesPdf } from '../utils/pdfExport';

@@ -4,9 +4,9 @@ import { useUser } from '../context/UserContext';
 import { roleColors, type Role } from '../data/mockData';
 
 const NAV_ITEMS: { path: string; label: string; icon: string; roles: Role[] }[] = [
-  { path: '/',           label: 'Tableau de bord',   icon: '⊞', roles: ['Manager', 'Directeur', 'RRH', 'DRH', 'SIRH'] },
-  { path: '/campaigns',  label: 'Campagnes',          icon: '📋', roles: ['Manager', 'Directeur', 'RRH', 'DRH', 'SIRH'] },
-  { path: '/employees',  label: 'Collaborateurs',     icon: '👥', roles: ['Manager', 'Directeur', 'RRH', 'DRH', 'SIRH'] },
+  { path: '/',           label: 'Accueil',            icon: '⊞', roles: ['Manager', 'Directeur', 'RRH', 'DRH', 'SIRH'] },
+  { path: '/campaigns',  label: 'Campagnes',          icon: '📋', roles: ['Directeur', 'RRH', 'DRH', 'SIRH'] },
+  { path: '/employees',  label: 'Collaborateurs',     icon: '👥', roles: ['Directeur', 'RRH', 'DRH', 'SIRH'] },
   { path: '/reporting',  label: 'Reporting & Équité', icon: '📊', roles: ['RRH', 'DRH', 'SIRH'] },
   { path: '/audit',      label: "Journal d'audit",    icon: '🔍', roles: ['DRH', 'SIRH'] },
   { path: '/admin',      label: 'Administration',     icon: '⚙️', roles: ['SIRH'] },
@@ -48,8 +48,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <span style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '-.01em' }}>
             SAP BTP
           </span>
-          <span style={{ opacity: .4, fontSize: '1.1rem' }}>|</span>
-          <span style={{ fontWeight: 600, fontSize: '.9rem', opacity: .95 }}>
+          <span className="app-top-subtitle" style={{ opacity: .4, fontSize: '1.1rem' }}>|</span>
+          <span className="app-top-subtitle" style={{ fontWeight: 600, fontSize: '.9rem', opacity: .95 }}>
             Gestion des Rémunérations
           </span>
         </div>
@@ -176,6 +176,21 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Bottom nav — visible uniquement en mobile */}
+      <nav className="mobile-nav">
+        {navItems.map(item => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.path === '/'}
+            className={({ isActive }) => `mobile-nav-link${isActive ? ' active' : ''}`}
+          >
+            <span className="mobile-nav-icon">{item.icon}</span>
+            <span>{item.label.split(' ')[0]}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }

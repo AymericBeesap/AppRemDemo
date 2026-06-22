@@ -1,3 +1,29 @@
+/**
+ * mockData.ts — Données de démonstration (DEV uniquement).
+ *
+ * A FAIRE — Connexion SAP : toutes les données de ce fichier sont des données mock.
+ * En production BTP, elles doivent être remplacées par des appels aux services réels :
+ *
+ *  employees[]   → getEmployees() / getEmployeesByManager()  in src/services/api.ts
+ *                  Source : S/4HANA API_EMPLOYEE_SRV + PA0008 (salaire)
+ *                  ou SuccessFactors Employee Central (EmpJob, EmpPayCompensation)
+ *
+ *  campaigns[]   → getCampaigns() / getCampaignById()        in src/services/api.ts
+ *                  Source : CAP service (table Campaigns, OData V4)
+ *
+ *  propositions  → getPropositions() / upsertProposition()   in src/services/api.ts
+ *                  Source : CAP service (table Propositions, OData V4)
+ *
+ *  audit*        → getAuditLogs() / getAuditParams()         in src/services/api.ts
+ *                  Source : CAP service (table AuditLogs, append-only)
+ *
+ * Les interfaces TypeScript (Employee, Campaign, etc.) définies dans ce fichier
+ * restent en place — elles sont le contrat interne de l'application.
+ * Seules les données exportées (employees, campaigns, etc.) sont mock.
+ *
+ * Voir src/services/api.ts pour l'implémentation complète DEV/PROD.
+ */
+
 export type Role = 'SIRH' | 'DRH' | 'RRH' | 'Directeur' | 'Manager';
 export type CampaignType = 'augmentation' | 'bonus' | 'gpec';
 export type CampaignStatus = 'brouillon' | 'ouverte' | 'en_validation' | 'cloturee';

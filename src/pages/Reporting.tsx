@@ -2,6 +2,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
+// A FAIRE — Connexion SAP/CAP : remplacer les imports mockData par des appels api.ts :
+//   genderEquityData → getGenderEquityData()  — CAP (vue analytique croisant S/4HANA + Propositions)
+//   employees        → getEmployees()          — S/4HANA ou SuccessFactors
+//   budgetByEntity   → getBudgetByEntity()     — CAP BudgetEvents agrégés
+// Attention : les données salariales sont GDPR sensibles — vérifier les autorisations XSUAA
+// avant d'afficher les salaires individuels (scope remunerations.DRH ou remunerations.RRH requis)
 import { genderEquityData, employees, budgetByEntity } from '../data/mockData';
 
 const fmtEur = (n: number) =>

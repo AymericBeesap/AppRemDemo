@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// A FAIRE — Connexion CAP : remplacer `campaigns` par getCampaignById(id) de src/services/api.ts
+// GET /cap/odata/v4/RemunerationService/Campaigns(id)?$expand=ReglesGpec,WorkflowEtapes
+// A FAIRE — Connexion Workflow : completeTask() via WorkflowContext (déjà branché)
 import { campaigns, workflowStatusLabels, type WorkflowStatus } from '../data/mockData';
 
 const fmtEur = (n: number) =>

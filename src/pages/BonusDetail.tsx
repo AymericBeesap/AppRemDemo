@@ -1,5 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// A FAIRE — Connexion SAP/CAP : remplacer les imports mockData :
+//   campaigns    → getCampaignById(id)            — CAP /Campaigns(id)?$expand=BonusEntites
+//   employees    → getEmployees()                  — S/4HANA ou SuccessFactors
+//   propositions → getPropositions(campaignId)    — CAP /Propositions?$filter=campaignId eq '${id}'
+// A FAIRE — Connexion Workflow : completeTask() via WorkflowContext (déjà branché)
 import { campaigns, employees, propositions, workflowStatusLabels, type WorkflowStatus } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 

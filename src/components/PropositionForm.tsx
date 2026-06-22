@@ -72,8 +72,8 @@ export default function PropositionForm({ open, onClose, onSubmit, employee, cam
         style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.35)', zIndex: 200 }}
         onClick={onClose}
       />
-      {/* Drawer */}
-      <div style={{
+      {/* Drawer — 480px desktop, plein écran mobile */}
+      <div className="proposition-drawer" style={{
         position: 'fixed', top: 0, right: 0, bottom: 0,
         width: 480, background: '#fff', zIndex: 201,
         boxShadow: '-4px 0 24px rgba(0,0,0,.15)',

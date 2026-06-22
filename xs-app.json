@@ -1,10 +1,49 @@
 {
   "welcomeFile": "/index.html",
   "authenticationMethod": "route",
+  "sendWWWAuthenticate": false,
+  "login": {
+    "callbackEndpoint": "/callback"
+  },
+  "logout": {
+    "logoutEndpoint": "/logout",
+    "logoutPage": "/index.html"
+  },
   "routes": [
     {
-      "source": "^/api/(.*)$",
-      "destination": "backend-api",
+      "_comment": "A FAIRE — Connexion S/4HANA : créer la destination 's4hana' dans BTP Cockpit > Connectivity > Destinations avec Type=HTTP, Authentication=OAuth2SAMLBearerAssertion, URL=https://<host>:<port>",
+      "source": "^/s4hana/(.*)$",
+      "target": "/$1",
+      "destination": "s4hana",
+      "authenticationType": "xsuaa",
+      "csrfProtection": false
+    },
+    {
+      "_comment": "A FAIRE — Connexion CAP Service : créer la destination 'remunerations-srv' pointant vers le service CAP déployé sur BTP CF (cf push). URI auto-injectée par MTA si dans le même espace.",
+      "source": "^/cap/(.*)$",
+      "target": "/$1",
+      "destination": "remunerations-srv",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "_comment": "A FAIRE — Connexion Workflow BPA : créer la destination 'workflow-service' avec Type=HTTP, URL=https://<tenant>.api.workflowmanagement.cfapps.<region>.hana.ondemand.com, Authentication=OAuth2ClientCredentials, scope=workflow_instance_start",
+      "source": "^/bpa/(.*)$",
+      "target": "/$1",
+      "destination": "workflow-service",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "_comment": "A FAIRE — SuccessFactors (optionnel, alternative à S/4HANA HR) : créer destination 'successfactors' avec OAuth2SAMLBearerAssertion",
+      "source": "^/sf/(.*)$",
+      "target": "/$1",
+      "destination": "successfactors",
+      "authenticationType": "xsuaa",
+      "csrfProtection": false
+    },
+    {
+      "source": "^/index.html$",
+      "target": "/index.html",
+      "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     },
     {

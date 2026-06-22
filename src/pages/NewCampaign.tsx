@@ -1,5 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// A FAIRE — Connexion SAP/CAP :
+//   employees (pour la sélection de population) → getEmployees() de src/services/api.ts
+//   Création de campagne → createCampaign() de src/services/api.ts
+//     POST /cap/odata/v4/RemunerationService/Campaigns
+//   Après création → startProcess() via WorkflowContext pour démarrer le workflow BPA
 import { employees, type CampaignType } from '../data/mockData';
 
 const fmtEur = (n: number) =>

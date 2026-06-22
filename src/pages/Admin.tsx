@@ -1,4 +1,9 @@
 import { useState } from 'react';
+// A FAIRE — Connexion CAP : remplacer `appUsers` par getAppUsers() de src/services/api.ts
+// GET /cap/odata/v4/RemunerationService/AppUsers?$expand=Permissions
+// La gestion des rôles applicatifs (XSUAA Role Collections) doit se faire dans BTP Cockpit
+// > Security > Users. La table AppUsers CAP stocke les métadonnées métier (périmètre, entité)
+// en complément des rôles XSUAA (qui gèrent les autorisations d'accès).
 import { appUsers, roleColors, roleLabels, type Role, type AppUser } from '../data/mockData';
 import { useWorkflow } from '../context/WorkflowContext';
 import type { WorkflowTemplate, WorkflowStepConfig, WorkflowAction } from '../types/workflow';
