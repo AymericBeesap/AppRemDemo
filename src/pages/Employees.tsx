@@ -4,34 +4,60 @@ import { useState } from 'react';
 //   + HCM_PAYRESULT_DISPLAY_SRV (salaire actuel — données GDPR sensibles)
 // Alternative : SuccessFactors EmpJob + EmpPayCompensation
 // Pour Manager : utiliser getEmployeesByManager(user.matricule) pour filtrer l'équipe
-import { employees, type Employee } from '../data/mockData';
-import { exportBsiPdf } from '../utils/pdfExport';
+import { employees } from '../data/mockData';
+import EmployeeDrawer from '../components/EmployeeDrawer';
+import { useNavigate } from 'react-router-dom';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
 export default function Employees() {
-  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+  const [search, setSearch]         = useState('');
   const [filterEntity, setFilterEntity] = useState('all');
-  const [filterGrade, setFilterGrade] = useState('all');
-  const [selected, setSelected] = useState<Employee | null>(null);
+  const [filterGrade, setFilterGrade]   = useState('all');
+  const [drawerMatricule, setDrawerMatricule] = useState<string | null>(null);
 
   const entities = [...new Set(employees.map(e => e.entite))];
-  const grades = [...new Set(employees.map(e => e.grade))].sort();
+  const grades   = [...new Set(employees.map(e => e.grade))].sort();
 
   const filtered = employees.filter(e => {
     const q = search.toLowerCase();
     const matchSearch = !q || `${e.prenom} ${e.nom} ${e.matricule}`.toLowerCase().includes(q);
     const matchEntity = filterEntity === 'all' || e.entite === filterEntity;
-    const matchGrade = filterGrade === 'all' || e.grade === filterGrade;
+    const matchGrade  = filterGrade  === 'all' || e.grade  === filterGrade;
     return matchSearch && matchEntity && matchGrade;
   });
+
+  const totalBudget = employees.reduce((s, e) => s + e.salaireActuel, 0);
+  const eligibleCount = employees.filter(e => e.eligible).length;
 
   return (
     <>
       <div className="page-header">
         <h1>Collaborateurs</h1>
         <p>{employees.length} collaborateurs chargés · Données issues SAP/SAGE</p>
+      </div>
+
+      {/* KPI rapides */}
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '1.25rem' }}>
+        <div className="kpi-card">
+          <div className="kpi-label">Total collaborateurs</div>
+          <div className="kpi-value">{employees.length}</div>
+        </div>
+        <div className="kpi-card success">
+          <div className="kpi-label">Éligibles</div>
+          <div className="kpi-value" style={{ color: 'var(--success)' }}>{eligibleCount}</div>
+          <div className="kpi-sub">{((eligibleCount / employees.length) * 100).toFixed(0)} % de l'effectif</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-label">Masse salariale totale</div>
+          <div className="kpi-value" style={{ fontSize: '1.375rem' }}>{fmtEur(totalBudget)}</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-label">Entités couvertes</div>
+          <div className="kpi-value">{entities.length}</div>
+        </div>
       </div>
 
       <div className="toolbar">
@@ -51,160 +77,91 @@ export default function Employees() {
           {grades.map(g => <option key={g} value={g}>{g}</option>)}
         </select>
         <div style={{ flex: 1 }} />
-        <span style={{ fontSize: '.85rem', color: '#6b6b6b' }}>{filtered.length} résultat(s)</span>
-        <button className="btn btn-ghost btn-sm" onClick={() => alert('Export CSV des collaborateurs')}>⬇️ Export</button>
+        <span style={{ fontSize: '.85rem', color: 'var(--text-secondary)' }}>{filtered.length} résultat(s)</span>
+        <button className="btn btn-ghost btn-sm" onClick={() => navigate('/bsi')}>📄 Générer BSI</button>
+        <button className="btn btn-ghost btn-sm" onClick={() => alert('Export CSV des collaborateurs')}>⬇ Export</button>
       </div>
 
-      <div className="grid-2" style={{ alignItems: 'start' }}>
-        {/* Table */}
-        <div className="section-card" style={{ overflow: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Collaborateur</th>
-                <th>Entité</th>
-                <th>Grade / Éch.</th>
-                <th>Ancienneté</th>
-                <th>Salaire fixe</th>
-                <th>Éligible</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(emp => (
-                <tr
-                  key={emp.matricule}
-                  style={{ cursor: 'pointer', background: selected?.matricule === emp.matricule ? '#e8f0fc' : '' }}
-                  onClick={() => setSelected(emp)}
-                >
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                      <div
-                        className="avatar"
-                        style={{ width: 30, height: 30, fontSize: '.7rem', background: emp.genre === 'F' ? '#9c27b0' : '#0a6ed1' }}
-                      >
-                        {emp.prenom[0]}{emp.nom[0]}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '.875rem' }}>{emp.prenom} {emp.nom}</div>
-                        <div style={{ fontSize: '.7rem', color: '#6b6b6b' }}>{emp.matricule}</div>
-                      </div>
+      <div className="section-card" style={{ overflow: 'auto' }}>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Collaborateur</th>
+              <th>Entité / Division</th>
+              <th>Grade / Éch.</th>
+              <th>Ancienneté</th>
+              <th>Salaire fixe</th>
+              <th>Éligible</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(emp => (
+              <tr
+                key={emp.matricule}
+                className="clickable"
+                style={{ background: drawerMatricule === emp.matricule ? 'var(--primary-bg)' : '' }}
+                onClick={() => setDrawerMatricule(emp.matricule)}
+              >
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                    <div
+                      className="avatar"
+                      style={{ width: 32, height: 32, fontSize: '.7rem', background: emp.genre === 'F' ? '#9c27b0' : 'var(--primary)' }}
+                    >
+                      {emp.prenom[0]}{emp.nom[0]}
                     </div>
-                  </td>
-                  <td style={{ fontSize: '.8rem' }}>
-                    <div>{emp.entite}</div>
-                    <div style={{ color: '#6b6b6b' }}>{emp.division}</div>
-                  </td>
-                  <td><span className="chip">{emp.grade}</span> Éch.{emp.echelon}</td>
-                  <td>{emp.anciennete} ans</td>
-                  <td style={{ fontWeight: 600 }}>{fmtEur(emp.salaireActuel)}</td>
-                  <td>
-                    <span className={emp.eligible ? 'badge badge-success' : 'badge badge-neutral'}>
-                      {emp.eligible ? '✓ Oui' : 'Non'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: '#a0a0a0', padding: '2rem' }}>
-                    Aucun collaborateur trouvé.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Fiche individuelle */}
-        {selected ? (
-          <div>
-            <div className="section-card">
-              <div className="section-card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-                  <div
-                    className="avatar"
-                    style={{ width: 44, height: 44, fontSize: '1rem', background: selected.genre === 'F' ? '#9c27b0' : '#0a6ed1' }}
-                  >
-                    {selected.prenom[0]}{selected.nom[0]}
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '.875rem' }}>{emp.prenom} {emp.nom}</div>
+                      <div style={{ fontSize: '.7rem', color: 'var(--text-secondary)' }}>{emp.matricule}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '1rem' }}>{selected.prenom} {selected.nom}</div>
-                    <div style={{ fontSize: '.78rem', color: '#6b6b6b' }}>{selected.matricule} · {selected.genre === 'F' ? 'Femme' : 'Homme'}</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
-                  <button className="btn btn-ghost btn-sm" onClick={() => exportBsiPdf(selected)}>⬇️ BSI PDF</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setSelected(null)}>✕</button>
-                </div>
-              </div>
-              <div style={{ padding: '1.25rem', display: 'grid', gap: '.75rem' }}>
-                <InfoRow label="Entité" value={selected.entite} />
-                <InfoRow label="Division" value={selected.division} />
-                <InfoRow label="Grade" value={`${selected.grade} – Échelon ${selected.echelon}`} />
-                <InfoRow label="Date d'entrée" value={new Date(selected.dateEntree).toLocaleDateString('fr-FR')} />
-                <InfoRow label="Ancienneté" value={`${selected.anciennete} ans`} />
-                <InfoRow label="Salaire fixe actuel" value={<strong style={{ color: '#0a6ed1' }}>{fmtEur(selected.salaireActuel)}</strong>} />
-                <InfoRow label="Éligibilité" value={
-                  <span className={selected.eligible ? 'badge badge-success' : 'badge badge-neutral'}>
-                    {selected.eligible ? 'Éligible' : 'Non éligible'}
+                </td>
+                <td style={{ fontSize: '.8rem' }}>
+                  <div>{emp.entite}</div>
+                  <div style={{ color: 'var(--text-secondary)' }}>{emp.division}</div>
+                </td>
+                <td>
+                  <span className="chip">{emp.grade}</span>
+                  <span style={{ fontSize: '.8rem', color: 'var(--text-secondary)', marginLeft: '.25rem' }}>Éch.{emp.echelon}</span>
+                </td>
+                <td style={{ fontSize: '.875rem' }}>{emp.anciennete} ans</td>
+                <td style={{ fontWeight: 600 }}>{fmtEur(emp.salaireActuel)}</td>
+                <td>
+                  <span className={emp.eligible ? 'badge badge-success' : 'badge badge-neutral'}>
+                    {emp.eligible ? '✓ Oui' : 'Non'}
                   </span>
-                } />
-              </div>
-            </div>
-
-            <div className="section-card">
-              <div className="section-card-header"><h2>Historique rémunération (3 ans)</h2></div>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Année</th>
-                    <th>Salaire fixe</th>
-                    <th>Augmentation</th>
-                    <th>Bonus</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...selected.historiqueRemuneration].reverse().map(h => (
-                    <tr key={h.annee}>
-                      <td style={{ fontWeight: 600 }}>{h.annee}</td>
-                      <td>{fmtEur(h.salaire)}</td>
-                      <td style={{ color: '#1b7e39' }}>+{fmtEur(h.augmentation)}</td>
-                      <td style={{ color: '#0a6ed1' }}>{fmtEur(h.bonus)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div style={{ padding: '1rem 1.25rem', background: '#f9f9f9', borderTop: '1px solid #e5e5e5', fontSize: '.8rem', color: '#6b6b6b' }}>
-                Évolution sur 3 ans : {fmtEur(selected.historiqueRemuneration[2].salaire - selected.historiqueRemuneration[0].salaire)}{' '}
-                ({(((selected.historiqueRemuneration[2].salaire - selected.historiqueRemuneration[0].salaire) / selected.historiqueRemuneration[0].salaire) * 100).toFixed(1)}%)
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{
-            background: '#fff',
-            border: '1px dashed #c9c9c9',
-            borderRadius: '.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 200,
-            color: '#a0a0a0',
-            fontSize: '.9rem',
-          }}>
-            Sélectionnez un collaborateur pour voir sa fiche
-          </div>
-        )}
+                </td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-ghost"
+                    style={{ padding: '.2rem .5rem', fontSize: '.75rem' }}
+                    onClick={e => { e.stopPropagation(); setDrawerMatricule(emp.matricule); }}
+                  >
+                    Détail →
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="empty-state" style={{ padding: '1rem' }}>
+                    <div className="empty-state-icon">🔍</div>
+                    <p>Aucun collaborateur trouvé pour ces critères.</p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-    </>
-  );
-}
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.875rem', alignItems: 'center' }}>
-      <span style={{ color: '#6b6b6b' }}>{label}</span>
-      <span style={{ fontWeight: 500, color: '#1a1a1a' }}>{value}</span>
-    </div>
+      {/* Drawer employé */}
+      <EmployeeDrawer
+        matricule={drawerMatricule}
+        onClose={() => setDrawerMatricule(null)}
+      />
+    </>
   );
 }

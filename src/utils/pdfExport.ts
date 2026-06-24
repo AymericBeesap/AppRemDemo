@@ -25,7 +25,7 @@ function addTopBar(doc: jsPDF) {
   doc.setTextColor(255, 255, 255);
   doc.text('SAP BTP · Gestion des Rémunérations', 10, 9);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Groupe A · ${new Date().toLocaleDateString('fr-FR')}`, doc.internal.pageSize.getWidth() - 10, 9, { align: 'right' });
+  doc.text(`Entité 2 Services GIE · ${new Date().toLocaleDateString('fr-FR')}`, doc.internal.pageSize.getWidth() - 10, 9, { align: 'right' });
 }
 
 function addFooter(doc: jsPDF) {

@@ -313,6 +313,75 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
   );
 }
 
+// ── Widget Directive EU ────────────────────────────────────────────────────────
+
+function DirectiveBanner() {
+  const DIRECTIVE = new Date('2026-06-30');
+  const now = new Date();
+  const daysLeft = Math.ceil((DIRECTIVE.getTime() - now.getTime()) / 86400000);
+  const isUrgent = daysLeft <= 30;
+  const isPast = daysLeft < 0;
+
+  const checks = [
+    { label: 'Fourchettes salariales publiées',    done: false },
+    { label: 'Indicateurs écart H/F calculés',      done: true  },
+    { label: 'Rapport annuel généré',               done: false },
+    { label: 'Procédure d\'évaluation documentée',  done: true  },
+  ];
+
+  const doneCount = checks.filter(c => c.done).length;
+
+  return (
+    <div className={`directive-banner${isUrgent ? '' : ''}`} style={{
+      background: isPast ? 'linear-gradient(135deg, #b00020 0%, #7a0015 100%)'
+                        : isUrgent ? 'linear-gradient(135deg, #a05000 0%, #7a3800 100%)'
+                        : 'linear-gradient(135deg, #003366 0%, #0057b8 100%)',
+    }}>
+      <div>
+        <div className="directive-banner-title">
+          🇪🇺 Directive EU 2023/970 — Transparence salariale
+        </div>
+        <div className="directive-banner-sub">
+          Transposition obligatoire le 30 juin 2026 · {doneCount}/{checks.length} critères validés
+        </div>
+        <div className="directive-checklist" style={{ marginTop: '.625rem' }}>
+          {checks.map(c => (
+            <div key={c.label} className="directive-check-item">
+              <span>{c.done ? '✓' : '○'}</span>
+              <span style={{ opacity: c.done ? 1 : .75, textDecoration: c.done ? 'none' : 'none' }}>{c.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.75rem' }}>
+        <div className="directive-countdown">
+          {isPast ? (
+            <div className="directive-day-block" style={{ background: 'rgba(255,255,255,.25)' }}>
+              <div className="directive-day-num">—</div>
+              <div className="directive-day-label">Délai dépassé</div>
+            </div>
+          ) : (
+            <>
+              <div className="directive-day-block">
+                <div className="directive-day-num">{daysLeft}</div>
+                <div className="directive-day-label">jours</div>
+              </div>
+              <div style={{ opacity: .6, fontSize: '1.2rem' }}>restants</div>
+            </>
+          )}
+        </div>
+        <button
+          className="btn btn-sm"
+          style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: '1px solid rgba(255,255,255,.35)', fontSize: '.78rem' }}
+          onClick={() => { window.location.href = '/reporting'; }}
+        >
+          Voir les indicateurs →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Vue DRH / RRH / SIRH ─────────────────────────────────────────────────────
 
 function AdminDashboard({ user }: { user: SessionUser }) {
@@ -335,6 +404,9 @@ function AdminDashboard({ user }: { user: SessionUser }) {
         <h1>Tableau de bord</h1>
         <p>Vue d'ensemble des campagnes de rémunération – {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
       </div>
+
+      {/* Directive EU — visible DRH, RRH, SIRH */}
+      <DirectiveBanner />
 
       <div className="kpi-grid">
         <div className="kpi-card">

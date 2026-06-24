@@ -41,12 +41,20 @@ export interface SessionUser {
 // A FAIRE — Supprimer ce switcher en production. Les utilisateurs sont authentifiés
 // via XSUAA / SAP IAS. Le switcher ne doit jamais être déployé sur BTP.
 
+// A FAIRE — Microsoft Entra ID : en production, l'authentification est déléguée à
+// Microsoft Entra ID (Azure AD) via OpenID Connect, fédéré avec SAP IAS (Identity
+// Authentication Service). Le flux BTP est :
+//   Browser → SAP BTP AppRouter → SAP IAS (proxy OIDC) → Microsoft Entra ID
+// Le token JWT Entra ID est échangé par SAP IAS contre un token XSUAA.
+// Configuration requise : SAP IAS tenant + Corporate IdP (Entra) + XSUAA trust.
+// Voir : SAP BTP Security > Trust and Authorization > Trust Configuration.
+
 const DEV_USERS: SessionUser[] = [
-  { id: 'U001', prenom: 'Sophie',   nom: 'Dupont',   role: 'DRH',       entite: 'Groupe A',  perimetre: ['Groupe A', 'Filiale B', 'Filiale C'],    email: 'sophie.dupont@groupea.fr' },
-  { id: 'U002', prenom: 'Thomas',   nom: 'Renard',   role: 'SIRH',      entite: 'Groupe A',  perimetre: ['Groupe A', 'Filiale B', 'Filiale C'],    email: 'thomas.renard@groupea.fr' },
-  { id: 'U003', prenom: 'Marie',    nom: 'Lefort',   role: 'RRH',       entite: 'Filiale B', perimetre: ['Filiale B'],                             email: 'marie.lefort@groupea.fr' },
-  { id: 'U006', prenom: 'Philippe', nom: 'Rousseau', role: 'Directeur', entite: 'Groupe A',  perimetre: ['Finance – Groupe A'], matricule: 'E010', email: 'ph.rousseau@groupea.fr' },
-  { id: 'U008', prenom: 'Claire',   nom: 'Mercier',  role: 'Manager',   entite: 'Groupe A',  perimetre: ['RH – Groupe A'],      matricule: 'E011', email: 'c.mercier@groupea.fr' },
+  { id: 'U001', prenom: 'Sophie',   nom: 'Dupont',   role: 'DRH',       entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'],    email: 'sophie.dupont@eurotunnel.com' },
+  { id: 'U002', prenom: 'Thomas',   nom: 'Renard',   role: 'SIRH',      entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'],    email: 'thomas.renard@eurotunnel.com' },
+  { id: 'U003', prenom: 'Marie',    nom: 'Lefort',   role: 'RRH',       entite: 'Entité 3 France',        perimetre: ['Entité 3 France'],                                        email: 'marie.lefort@europorte.com' },
+  { id: 'U006', prenom: 'Philippe', nom: 'Rousseau', role: 'Directeur', entite: 'Entité 2 Services GIE', perimetre: ['Finance – Entité 2 Services GIE'], matricule: 'E010',     email: 'ph.rousseau@eurotunnel.com' },
+  { id: 'U008', prenom: 'Claire',   nom: 'Mercier',  role: 'Manager',   entite: 'Entité 2 Services GIE', perimetre: ['RH – Entité 2 Services GIE'],      matricule: 'E011',     email: 'c.mercier@eurotunnel.com' },
 ];
 
 // Les types SAP ushell (window.sap.ushell.Container, UserInfo, Navigation...)
@@ -113,7 +121,7 @@ async function loadBTPUser(): Promise<SessionUser> {
 
   // Fallback temporaire en attendant le CAP service
   // A FAIRE — Supprimer ce fallback quand fetchUserRoleFromCAP() est opérationnel
-  const roleData: UserRoleResponse = { role: 'DRH', entite: 'Groupe A', perimetre: ['Groupe A'] };
+  const roleData: UserRoleResponse = { role: 'DRH', entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE'] };
 
   return {
     id:        id || email || 'unknown',

@@ -35,13 +35,15 @@ const allPermissions = [
 
 const integrations = [
   { id: 'sap',   name: 'SAP ERP',            statut: 'connecte',     derniereSync: '2026-03-01 09:00', descr: 'Import collaborateurs, grades, rémunérations' },
-  { id: 'sage',  name: 'SAGE (Filiale C)',    statut: 'connecte',     derniereSync: '2026-03-01 09:05', descr: 'Import collaborateurs Filiale C' },
+  // A FAIRE — SAGE : intégration SAGE pour SOCORAIL (alternative à SAP pour certaines entités).
+  // SOCORAIL utilise SAGE Paie au lieu de SAP HCM — mapper les données via un middleware ETL ou API SAGE.
+  { id: 'sage',  name: 'SAGE (SOCORAIL)',    statut: 'connecte',     derniereSync: '2026-03-01 09:05', descr: 'Import collaborateurs SOCORAIL' },
   { id: 'lucca', name: 'LUCCA (objectifs)',   statut: 'non_connecte', derniereSync: '–',                descr: 'Intégration performance/objectifs (optionnel)' },
   { id: 'entra', name: 'Microsoft Entra ID', statut: 'connecte',     derniereSync: 'Temps réel',       descr: 'Authentification SSO obligatoire' },
 ];
 
 const ALL_ROLES: Role[] = ['SIRH', 'DRH', 'RRH', 'Directeur', 'Manager'];
-const ALL_ENTITIES = ['Groupe A', 'Filiale B', 'Filiale C'];
+const ALL_ENTITIES = ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'];
 const WORKFLOW_ACTIONS: { value: WorkflowAction; label: string }[] = [
   { value: 'valider',       label: 'Valider' },
   { value: 'rejeter',       label: 'Rejeter' },
@@ -638,7 +640,7 @@ export default function Admin() {
             <div className="section-card-header"><h2>Paramètres généraux</h2></div>
             <div style={{ padding: '1.25rem', display: 'grid', gap: '.75rem' }}>
               {[
-                ['Nom du groupe', 'Groupe A'],
+                ['Nom du groupe', 'Entité 2 Services GIE'],
                 ['Exercice fiscal', '2026'],
                 ['Devise', 'EUR (€)'],
                 ['Langue', 'Français (FR)'],
@@ -724,7 +726,7 @@ export default function Admin() {
                 <textarea className="input-field" rows={3} style={{ width: '100%', resize: 'none', fontFamily: 'inherit', fontSize: '.85rem' }}
                   value={editForm.perimetre.join('\n')}
                   onChange={e => setEditForm(f => f ? { ...f, perimetre: e.target.value.split('\n').filter(Boolean) } : f)}
-                  placeholder="Un périmètre par ligne&#10;ex: Finance – Groupe A" />
+                  placeholder="Un périmètre par ligne&#10;ex: Finance – Entité 2 Services GIE" />
               </div>
               <div style={{ background: '#f5f6f7', borderRadius: '.375rem', padding: '1rem' }}>
                 <div style={{ fontSize: '.8rem', fontWeight: 600, marginBottom: '.5rem', color: '#1a1a1a' }}>Permissions du rôle {editForm.role}</div>

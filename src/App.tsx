@@ -8,6 +8,7 @@ import Employees from './pages/Employees';
 import Reporting from './pages/Reporting';
 import Audit from './pages/Audit';
 import Admin from './pages/Admin';
+import Bsi from './pages/Bsi';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/campaigns/new" element={<NewCampaign />} />
         <Route path="/campaigns/:id" element={<CampaignDetail />} />
         <Route path="/employees" element={<Employees />} />
+        <Route path="/bsi" element={<Bsi />} />
         <Route path="/reporting" element={<Reporting />} />
         <Route path="/audit" element={<Audit />} />
         <Route path="/admin" element={<Admin />} />
