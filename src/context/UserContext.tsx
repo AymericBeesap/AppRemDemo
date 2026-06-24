@@ -49,28 +49,8 @@ const DEV_USERS: SessionUser[] = [
   { id: 'U008', prenom: 'Claire',   nom: 'Mercier',  role: 'Manager',   entite: 'Groupe A',  perimetre: ['RH – Groupe A'],      matricule: 'E011', email: 'c.mercier@groupea.fr' },
 ];
 
-// ── Interface SAP ushell (types minimaux) ─────────────────────────────────────
-// A FAIRE — Connexion FLP : installer @types/sap__ui5-shims ou déclarer globalement
-// dans src/vite-env.d.ts si nécessaire
-
-declare global {
-  interface Window {
-    sap?: {
-      ushell?: {
-        Container: {
-          getService(name: 'UserInfo'): {
-            getId(): string;
-            getFirstName(): string;
-            getLastName(): string;
-            getEmail(): string;
-            getFullName(): string;
-          };
-          getService(name: string): unknown;
-        };
-      };
-    };
-  }
-}
+// Les types SAP ushell (window.sap.ushell.Container, UserInfo, Navigation...)
+// sont déclarés dans src/vite-env.d.ts — pas de declare global ici.
 
 // ── Résolution du rôle métier via CAP ─────────────────────────────────────────
 
@@ -167,19 +147,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const isInFLP = typeof window !== 'undefined' && !!window.sap?.ushell;
 
   useEffect(() => {
-    if (DEV) return; // En DEV, on utilise le switcher de profil
+    if (DEV) return; // En DEV, le switcher de profil gère l'identité
 
-    // A FAIRE — Connexion BTP : loadBTPUser() sera actif en production
-    // Actuellement commenté pour ne pas bloquer le dev ; décommenter avant déploiement BTP
-    // setLoading(true);
-    // loadBTPUser()
-    //   .then(u => setUser(u))
-    //   .catch(err => {
-    //     console.error('[UserContext] Failed to load BTP user:', err);
-    //     // A FAIRE — Afficher une page d'erreur d'authentification plutôt que le fallback
-    //   })
-    //   .finally(() => setLoading(false));
-    setLoading(false);
+    setLoading(true);
+    loadBTPUser()
+      .then(u => setUser(u))
+      .catch(err => {
+        console.error('[UserContext] Échec du chargement de l\'identité BTP:', err);
+        // A FAIRE — Afficher une page d'erreur dédiée plutôt que de rester sur le profil DEV par défaut
+        // Exemple : navigate('/error?code=auth_failed')
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const switchUser = (id: string) => {

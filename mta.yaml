@@ -1,0 +1,132 @@
+_schema-version: "3.1"
+ID: com.groupea.remunerations
+description: Application de gestion des campagnes de rémunération (augmentations, bonus, GPEC)
+version: 1.0.0
+
+# A FAIRE — Déploiement BTP :
+#   1. Installer MTA Build Tool : npm install -g mbt
+#   2. Construire l'archive : mbt build -p cf
+#   3. Déployer : cf deploy mta_archives/com.groupea.remunerations_1.0.0.mtar
+#
+# Prérequis BTP Cockpit (Cloud Foundry space) :
+#   - Service XSUAA     : cf create-service xsuaa application remunerations-xsuaa -c xs-security.json
+#   - Service Dest      : cf create-service destination lite remunerations-destination
+#   - Service HTML5 Repo: cf create-service html5-apps-repo app-hosting remunerations-html5-repo
+
+modules:
+
+  # ── Module 1 : Application React (build Vite → HTML5 App Repository) ─────────
+  - name: remunerations-ui
+    type: html5
+    path: .
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci --prefer-offline
+        - npm run build
+      supported-platforms: []
+    requires:
+      - name: remunerations-html5-repo-host
+    parameters:
+      app-name: remunerations
+      memory: 256M
+
+  # ── Module 2 : AppRouter (authentification XSUAA + proxy destinations) ────────
+  # A FAIRE — AppRouter : créer le dossier /approuter avec :
+  #   - package.json : { "dependencies": { "@sap/approuter": "^14" } }
+  #   - xs-app.json  : copie du xs-app.json racine
+  #   Les routes /s4hana, /cap, /bpa sont résolues par ce module.
+  - name: remunerations-approuter
+    type: approuter.nodejs
+    path: approuter
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: remunerations-xsuaa
+      - name: remunerations-destination
+      - name: remunerations-html5-repo-runtime
+      - name: srv-api          # A FAIRE — CAP : décommenter quand le service CAP est déployé
+        group: destinations
+        properties:
+          name: remunerations-srv
+          url: ~{srv-url}
+          forwardAuthToken: true
+    provides:
+      - name: remunerations-approuter-url
+        properties:
+          url: ${default-url}
+
+  # ── Module 3 : CAP Service (Node.js / Java — backend données métier) ──────────
+  # A FAIRE — CAP Service : décommenter quand le projet CAP est créé dans /cap
+  # Le service CAP expose les entités : Campaigns, Propositions, AuditLogs, AppUsers
+  # Voir la documentation : https://cap.cloud.sap/docs/guides/deployment/to-cf
+  #
+  # - name: remunerations-srv
+  #   type: nodejs
+  #   path: cap
+  #   parameters:
+  #     buildpack: nodejs_buildpack
+  #     memory: 512M
+  #   requires:
+  #     - name: remunerations-xsuaa
+  #     - name: remunerations-db
+  #   provides:
+  #     - name: srv-api
+  #       properties:
+  #         srv-url: ${default-url}
+  #
+  # - name: remunerations-db-deployer
+  #   type: hdb
+  #   path: cap/db
+  #   requires:
+  #     - name: remunerations-db
+
+resources:
+
+  # ── XSUAA — Authentification et autorisation ──────────────────────────────────
+  # A FAIRE — XSUAA : après déploiement, assigner les Role Collections aux utilisateurs
+  # dans BTP Cockpit > Security > Users (ou via IAS group mapping)
+  - name: remunerations-xsuaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: xs-security.json
+      config:
+        xsappname: remunerations-${org}-${space}
+        tenant-mode: dedicated
+
+  # ── Destination Service — proxy vers S/4HANA, BPA, SuccessFactors ─────────────
+  # A FAIRE — Destinations : configurer dans BTP Cockpit > Connectivity > Destinations :
+  #   s4hana          → Type HTTP, Auth OAuth2SAMLBearerAssertion, URL S/4HANA
+  #   workflow-service → Type HTTP, Auth OAuth2ClientCredentials, URL BPA
+  #   successfactors   → Type HTTP, Auth OAuth2SAMLBearerAssertion, URL SF API
+  - name: remunerations-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+
+  # ── HTML5 Application Repository — hébergement des assets React ───────────────
+  - name: remunerations-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+
+  - name: remunerations-html5-repo-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
+
+  # ── SAP HANA Cloud — base de données CAP (production) ─────────────────────────
+  # A FAIRE — HANA Cloud : décommenter quand le service CAP est actif
+  # En développement local, CAP utilise SQLite automatiquement (cds watch)
+  # - name: remunerations-db
+  #   type: com.sap.xs.hdi-container
+  #   parameters:
+  #     service: hana
+  #     service-plan: hdi-shared

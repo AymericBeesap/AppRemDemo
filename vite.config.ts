@@ -18,6 +18,14 @@ import react from '@vitejs/plugin-react';
  */
 export default defineConfig({
   plugins: [react()],
+
+  // Base path pour HTML5 App Repository (BTP).
+  // En production, les assets sont servis sous /<app-id>/ (= sap.app.id du manifest).
+  // En local, on reste sur '/' pour le dev server.
+  // A FAIRE — Déploiement BTP : si les assets sont en 404, vérifier que VITE_BASE_PATH
+  // correspond bien à l'ID déclaré dans manifest.json > sap.app.id
+  base: process.env.VITE_BASE_PATH ?? '/',
+
   server: {
     port: 5173,
     proxy: {

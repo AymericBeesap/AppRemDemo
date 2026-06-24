@@ -38,12 +38,52 @@ import { CAP_ENDPOINTS, S4_ENDPOINTS } from '../config/endpoints';
 
 const DEV = import.meta.env.DEV;
 
+// sap-client : numéro de mandant S/4HANA. Injecter dans chaque requête S/4HANA.
+// A FAIRE — Connexion S/4HANA : remplacer par le mandant de production (100, 200, etc.)
+// Peut aussi être configuré comme propriété de la destination BTP (Additional Properties > sap-client)
+const SAP_CLIENT = import.meta.env.VITE_SAP_CLIENT ?? '100';
+
+// ── CSRF Token S/4HANA OData V2 ───────────────────────────────────────────────
+// S/4HANA rejette tout POST/PUT/DELETE sans X-CSRF-Token valide (réponse 403 CSRF-Token invalid).
+// Le token est obtenu via un GET avec le header X-CSRF-Token: Fetch, puis mis en cache.
+// Durée de vie du token : ~30 min côté S/4HANA (renouveler en cas de 403).
+
+let csrfTokenCache: { token: string; expiresAt: number } | null = null;
+
+async function fetchCsrfToken(): Promise<string> {
+  const now = Date.now();
+  if (csrfTokenCache && csrfTokenCache.expiresAt > now) return csrfTokenCache.token;
+
+  // GET sur le service root pour récupérer le token — S/4HANA répond avec X-CSRF-Token dans le header
+  const res = await fetch(S4_ENDPOINTS.CSRF, {
+    method: 'GET',
+    headers: {
+      'X-CSRF-Token': 'Fetch',
+      Accept: 'application/json',
+      'sap-client': SAP_CLIENT,
+    },
+    credentials: 'include',
+  });
+  const token = res.headers.get('x-csrf-token');
+  if (!token || token === 'Required') {
+    throw new ApiError(403, 'CSRF Fetch', 'S/4HANA CSRF token non reçu — vérifier la destination BTP et les autorisations ICF');
+  }
+  // Cache 25 min (S/4HANA expire à 30 min)
+  csrfTokenCache = { token, expiresAt: now + 25 * 60 * 1000 };
+  return token;
+}
+
 // ── Helpers HTTP ──────────────────────────────────────────────────────────────
 
 async function odataGet<T>(url: string, params?: Record<string, string>): Promise<T> {
   const qs = new URLSearchParams({ $format: 'json', ...params }).toString();
   const res = await fetch(`${url}?${qs}`, {
-    headers: { Accept: 'application/json' },
+    headers: {
+      Accept: 'application/json',
+      'sap-client': SAP_CLIENT,
+      // A FAIRE — Connexion S/4HANA : ajouter le header SAP-Passport pour le tracing bout-en-bout
+      // 'SAP-PASSPORT': generateSapPassport(),
+    },
     credentials: 'include',
   });
   if (!res.ok) throw new ApiError(res.status, `GET ${url}`, await res.text());
@@ -52,18 +92,64 @@ async function odataGet<T>(url: string, params?: Record<string, string>): Promis
   return (json.d?.results ?? json.value ?? json) as T;
 }
 
+// Mutations S/4HANA OData V2 — nécessitent un CSRF token valide
+async function s4Mutate<T>(
+  url: string,
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+  body?: unknown,
+): Promise<T> {
+  let csrfToken: string;
+  try {
+    csrfToken = await fetchCsrfToken();
+  } catch {
+    // En cas d'échec CSRF, invalider le cache et réessayer une fois
+    csrfTokenCache = null;
+    csrfToken = await fetchCsrfToken();
+  }
+
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-CSRF-Token': csrfToken,
+      'sap-client': SAP_CLIENT,
+    },
+    credentials: 'include',
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  // CSRF expiré : invalider le cache (le prochain appel refetchera)
+  if (res.status === 403) {
+    csrfTokenCache = null;
+    throw new ApiError(403, `${method} ${url}`, 'CSRF token expiré — réessayer');
+  }
+
+  if (!res.ok) throw new ApiError(res.status, `${method} ${url}`, await res.text());
+  if (method === 'DELETE' || res.status === 204) return undefined as T;
+  const json = await res.json();
+  return (json.d ?? json) as T;
+}
+
 async function capFetch<T>(
   url: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
   body?: unknown,
 ): Promise<T> {
+  // CAP OData V4 : pas de CSRF token nécessaire (géré par le framework CAP)
   const res = await fetch(url, {
     method,
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     credentials: 'include',
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new ApiError(res.status, `${method} ${url}`, await res.text());
+  if (!res.ok) {
+    // OData V4 error format : { error: { code, message } }
+    const errBody = await res.text();
+    let detail = errBody;
+    try { detail = JSON.parse(errBody)?.error?.message ?? errBody; } catch { /* raw text */ }
+    throw new ApiError(res.status, `${method} ${url}`, detail);
+  }
   if (method === 'DELETE' || res.status === 204) return undefined as T;
   const json = await res.json();
   return (json.value ?? json) as T;

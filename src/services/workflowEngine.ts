@@ -43,7 +43,7 @@ export class LocalWorkflowEngine implements WorkflowEngineAdapter {
     this.templates = templates;
   }
 
-  startProcess(campaignId: string, _campaignNom: string, templateId: string): string {
+  async startProcess(campaignId: string, _campaignNom: string, templateId: string): Promise<string> {
     const instanceId = `INST-${campaignId}-${Date.now()}`;
     this.instances.set(instanceId, {
       instanceId,
@@ -57,7 +57,7 @@ export class LocalWorkflowEngine implements WorkflowEngineAdapter {
     return instanceId;
   }
 
-  completeTask(instanceId: string, action: WorkflowAction, acteur: string, commentaire?: string) {
+  async completeTask(instanceId: string, action: WorkflowAction, acteur: string, commentaire?: string): Promise<void> {
     const inst = this.instances.get(instanceId);
     if (!inst || inst.status !== 'en_cours') return;
 
@@ -87,11 +87,11 @@ export class LocalWorkflowEngine implements WorkflowEngineAdapter {
     }
   }
 
-  getProcessInstance(instanceId: string): WorkflowProcessInstance | null {
+  async getProcessInstance(instanceId: string): Promise<WorkflowProcessInstance | null> {
     return this.instances.get(instanceId) ?? null;
   }
 
-  getPendingTasks(role: Role): WorkflowPendingTask[] {
+  async getPendingTasks(role: Role): Promise<WorkflowPendingTask[]> {
     const tasks: WorkflowPendingTask[] = [];
     this.instances.forEach(inst => {
       if (inst.status !== 'en_cours') return;
@@ -114,7 +114,7 @@ export class LocalWorkflowEngine implements WorkflowEngineAdapter {
     return tasks;
   }
 
-  getStepsView(instanceId: string, template: WorkflowTemplate): WorkflowStepView[] {
+  async getStepsView(instanceId: string, template: WorkflowTemplate): Promise<WorkflowStepView[]> {
     const inst = this.instances.get(instanceId);
     return template.steps.map((step, idx) => {
       if (!inst) return { ...step, status: 'en_attente' as const };
@@ -228,7 +228,7 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
     return WORKFLOW_DEFINITION_IDS.AUGMENTATION;
   }
 
-  startProcess(campaignId: string, campaignNom: string, templateId: string): string {
+  async startProcess(campaignId: string, campaignNom: string, templateId: string): Promise<string> {
     // A FAIRE — Connexion Workflow BPA :
     // POST /workflow/rest/v1/workflow-instances
     // Body : {
@@ -263,7 +263,7 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
     return instanceId;
   }
 
-  completeTask(instanceId: string, action: WorkflowAction, acteur: string, commentaire?: string): void {
+  async completeTask(instanceId: string, action: WorkflowAction, acteur: string, commentaire?: string): Promise<void> {
     // A FAIRE — Connexion Workflow BPA :
     // 1. GET /workflow/rest/v1/task-instances?workflowInstanceId={instanceId}&status=READY
     //    → Récupérer l'ID du User Task courant
@@ -304,7 +304,7 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
       });
   }
 
-  getProcessInstance(instanceId: string): WorkflowProcessInstance | null {
+  async getProcessInstance(instanceId: string): Promise<WorkflowProcessInstance | null> {
     // A FAIRE — Connexion Workflow BPA :
     // GET /workflow/rest/v1/workflow-instances/{instanceId}
     // Réponse : { "id": "...", "definitionId": "...", "status": "RUNNING|COMPLETED|ERRONEOUS", "context": {...} }
@@ -321,7 +321,7 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
     return null;
   }
 
-  getPendingTasks(role: Role): WorkflowPendingTask[] {
+  async getPendingTasks(role: Role): Promise<WorkflowPendingTask[]> {
     // A FAIRE — Connexion Workflow BPA :
     // GET /workflow/rest/v1/task-instances?status=READY
     // Le BPA filtre automatiquement les tâches de l'utilisateur connecté via XSUAA
@@ -348,7 +348,7 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
     return [];
   }
 
-  getStepsView(instanceId: string, template: WorkflowTemplate): WorkflowStepView[] {
+  async getStepsView(instanceId: string, template: WorkflowTemplate): Promise<WorkflowStepView[]> {
     // A FAIRE — Connexion Workflow BPA :
     // GET /workflow/rest/v1/workflow-instances/{instanceId}/execution-logs
     // → Retourne l'historique complet des étapes (COMPLETED/RUNNING/PENDING)

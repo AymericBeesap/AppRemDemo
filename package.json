@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.1",
     "@types/react-router-dom": "^5.3.3",
     "@ui5/webcomponents": "^2.23.1",
     "@ui5/webcomponents-fiori": "^2.23.1",

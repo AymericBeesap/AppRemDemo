@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // A FAIRE — Connexion SAP/CAP : remplacer les imports mockData :
 //   campaigns   → getCampaignById(id)             — CAP /Campaigns(id)?$expand=Population
@@ -35,7 +35,11 @@ export default function AugmentationDetail({ campaignId }: Props) {
   const { user } = useUser();
 
   const [props, setProps] = useState<Proposition[]>(initialProps.filter(p => p.campaignId === campaignId));
+  const [workflowSteps, setWorkflowSteps] = useState<import('../types/workflow').WorkflowStepView[]>([]);
   const [formOpen, setFormOpen] = useState(false);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { getStepsView(campaignId, 'augmentation').then(setWorkflowSteps); }, [campaignId]);
   const [selectedEmp, setSelectedEmp] = useState<string | null>(null);
   const [filterStatut, setFilterStatut] = useState<string>('all');
   const [filterEntite, setFilterEntite] = useState<string>('all');
@@ -165,7 +169,6 @@ export default function AugmentationDetail({ campaignId }: Props) {
   const selectedEmployee = employees.find(e => e.matricule === selectedEmp) ?? null;
   const existingProp = props.find(p => p.matricule === selectedEmp);
 
-  const workflowSteps = getStepsView(campaignId, 'augmentation');
   const currentStep = workflowSteps.find(s => s.status === 'en_cours');
   const canAct = currentStep?.role === user.role;
 
@@ -669,16 +672,16 @@ export default function AugmentationDetail({ campaignId }: Props) {
                 Votre tour : <strong>{currentStep.libelle}</strong>
               </span>
               {currentStep.actions.includes('valider') && (
-                <button className="btn btn-primary btn-sm" onClick={() => {
-                  completeTask(campaignId, 'valider', `${user.prenom} ${user.nom}`);
+                <button className="btn btn-primary btn-sm" onClick={async () => {
+                  await completeTask(campaignId, 'valider', `${user.prenom} ${user.nom}`);
                   alert(`Étape "${currentStep.libelle}" validée.`);
                 }}>
                   ✓ Valider
                 </button>
               )}
               {currentStep.actions.includes('rejeter') && (
-                <button className="btn btn-ghost btn-sm" style={{ color: '#bb0000' }} onClick={() => {
-                  completeTask(campaignId, 'rejeter', `${user.prenom} ${user.nom}`, 'Rejeté depuis la vue détail');
+                <button className="btn btn-ghost btn-sm" style={{ color: '#bb0000' }} onClick={async () => {
+                  await completeTask(campaignId, 'rejeter', `${user.prenom} ${user.nom}`, 'Rejeté depuis la vue détail');
                   alert(`Étape "${currentStep.libelle}" rejetée.`);
                 }}>
                   ✕ Rejeter

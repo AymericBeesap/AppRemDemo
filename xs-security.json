@@ -1,0 +1,122 @@
+{
+  "xsappname": "remunerations",
+  "tenant-mode": "dedicated",
+  "description": "Sécurité XSUAA — Application Gestion des Rémunérations",
+
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.DRH",
+      "description": "Directeur des Ressources Humaines — accès global toutes entités, toutes campagnes"
+    },
+    {
+      "name": "$XSAPPNAME.RRH",
+      "description": "Responsable RH — accès limité à son périmètre d'entité"
+    },
+    {
+      "name": "$XSAPPNAME.Manager",
+      "description": "Manager — accès à son équipe directe uniquement, saisie des propositions"
+    },
+    {
+      "name": "$XSAPPNAME.Directeur",
+      "description": "Directeur métier — validation des propositions de son périmètre"
+    },
+    {
+      "name": "$XSAPPNAME.SIRH",
+      "description": "Administrateur SIRH — configuration des campagnes, gestion des droits, audit complet"
+    }
+  ],
+
+  "attributes": [
+    {
+      "name": "entite",
+      "description": "Entité organisationnelle de l'utilisateur (ex: Groupe A, Filiale B)",
+      "valueType": "string"
+    },
+    {
+      "name": "perimetre",
+      "description": "Liste des entités accessibles (séparées par virgule)",
+      "valueType": "string"
+    }
+  ],
+
+  "role-templates": [
+    {
+      "name": "DRH",
+      "description": "Directeur des Ressources Humaines",
+      "scope-references": ["$XSAPPNAME.DRH"],
+      "attribute-references": ["entite", "perimetre"]
+    },
+    {
+      "name": "RRH",
+      "description": "Responsable Ressources Humaines",
+      "scope-references": ["$XSAPPNAME.RRH"],
+      "attribute-references": ["entite", "perimetre"]
+    },
+    {
+      "name": "Manager",
+      "description": "Manager d'équipe",
+      "scope-references": ["$XSAPPNAME.Manager"],
+      "attribute-references": ["entite"]
+    },
+    {
+      "name": "Directeur",
+      "description": "Directeur métier validateur",
+      "scope-references": ["$XSAPPNAME.Directeur"],
+      "attribute-references": ["entite", "perimetre"]
+    },
+    {
+      "name": "SIRH",
+      "description": "Administrateur SIRH",
+      "scope-references": ["$XSAPPNAME.SIRH"],
+      "attribute-references": ["entite", "perimetre"]
+    }
+  ],
+
+  "role-collections": [
+    {
+      "name": "Remuneration_DRH",
+      "description": "Accès DRH — toutes entités",
+      "role-template-references": [
+        "$XSAPPNAME.DRH"
+      ]
+    },
+    {
+      "name": "Remuneration_RRH",
+      "description": "Accès RRH — périmètre entité",
+      "role-template-references": [
+        "$XSAPPNAME.RRH"
+      ]
+    },
+    {
+      "name": "Remuneration_Manager",
+      "description": "Accès Manager — équipe directe",
+      "role-template-references": [
+        "$XSAPPNAME.Manager"
+      ]
+    },
+    {
+      "name": "Remuneration_Directeur",
+      "description": "Accès Directeur — validation périmètre",
+      "role-template-references": [
+        "$XSAPPNAME.Directeur"
+      ]
+    },
+    {
+      "name": "Remuneration_SIRH",
+      "description": "Accès SIRH — administration complète",
+      "role-template-references": [
+        "$XSAPPNAME.SIRH"
+      ]
+    }
+  ],
+
+  "oauth2-configuration": {
+    "token-validity": 43200,
+    "refresh-token-validity": 604800,
+    "redirect-uris": [
+      "https://*.cfapps.eu10.hana.ondemand.com/**",
+      "https://*.cfapps.eu20.hana.ondemand.com/**",
+      "http://localhost:5173/**"
+    ]
+  }
+}

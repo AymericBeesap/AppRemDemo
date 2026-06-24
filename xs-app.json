@@ -10,47 +10,91 @@
     "logoutPage": "/index.html"
   },
   "routes": [
+
     {
-      "_comment": "A FAIRE — Connexion S/4HANA : créer la destination 's4hana' dans BTP Cockpit > Connectivity > Destinations avec Type=HTTP, Authentication=OAuth2SAMLBearerAssertion, URL=https://<host>:<port>",
+      "description": "A FAIRE — Connexion S/4HANA : créer destination 's4hana' dans BTP Cockpit > Connectivity > Destinations. Type=HTTP, Auth=OAuth2SAMLBearerAssertion, URL=https://<s4host>:<port>. Propriétés additionnelles : sap-client=100, WebIDEUsage=odata_abap",
       "source": "^/s4hana/(.*)$",
       "target": "/$1",
       "destination": "s4hana",
       "authenticationType": "xsuaa",
+      "scope": ["$XSAPPNAME.DRH", "$XSAPPNAME.RRH", "$XSAPPNAME.Manager", "$XSAPPNAME.Directeur", "$XSAPPNAME.SIRH"],
       "csrfProtection": false
     },
+
     {
-      "_comment": "A FAIRE — Connexion CAP Service : créer la destination 'remunerations-srv' pointant vers le service CAP déployé sur BTP CF (cf push). URI auto-injectée par MTA si dans le même espace.",
+      "description": "A FAIRE — Connexion CAP Service : destination 'remunerations-srv' auto-injectée par MTA si même BTP space. Sinon créer manuellement avec Type=HTTP, Auth=OAuth2UserTokenExchange, URL=https://<cap-app>.cfapps.<region>.hana.ondemand.com",
       "source": "^/cap/(.*)$",
       "target": "/$1",
       "destination": "remunerations-srv",
-      "authenticationType": "xsuaa"
+      "authenticationType": "xsuaa",
+      "scope": ["$XSAPPNAME.DRH", "$XSAPPNAME.RRH", "$XSAPPNAME.Manager", "$XSAPPNAME.Directeur", "$XSAPPNAME.SIRH"],
+      "csrfProtection": true
     },
+
     {
-      "_comment": "A FAIRE — Connexion Workflow BPA : créer la destination 'workflow-service' avec Type=HTTP, URL=https://<tenant>.api.workflowmanagement.cfapps.<region>.hana.ondemand.com, Authentication=OAuth2ClientCredentials, scope=workflow_instance_start",
+      "description": "A FAIRE — Connexion BPA : destination 'workflow-service', Auth=OAuth2ClientCredentials, URL=https://<tenant>.api.workflowmanagement.cfapps.<region>.hana.ondemand.com, TokenServiceURL=https://<tenant>.authentication.<region>.hana.ondemand.com/oauth/token",
       "source": "^/bpa/(.*)$",
       "target": "/$1",
       "destination": "workflow-service",
-      "authenticationType": "xsuaa"
+      "authenticationType": "xsuaa",
+      "scope": ["$XSAPPNAME.DRH", "$XSAPPNAME.RRH", "$XSAPPNAME.Directeur", "$XSAPPNAME.SIRH"]
     },
+
     {
-      "_comment": "A FAIRE — SuccessFactors (optionnel, alternative à S/4HANA HR) : créer destination 'successfactors' avec OAuth2SAMLBearerAssertion",
+      "description": "A FAIRE — SuccessFactors (optionnel) : destination 'successfactors', Auth=OAuth2SAMLBearerAssertion, URL=https://api<DC>.successfactors.com",
       "source": "^/sf/(.*)$",
       "target": "/$1",
       "destination": "successfactors",
       "authenticationType": "xsuaa",
+      "scope": ["$XSAPPNAME.DRH", "$XSAPPNAME.RRH", "$XSAPPNAME.SIRH"],
       "csrfProtection": false
     },
+
+    {
+      "source": "^/assets/(.*)$",
+      "target": "/assets/$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa",
+      "cacheControl": "public, max-age=31536000, immutable"
+    },
+
     {
       "source": "^/index.html$",
       "target": "/index.html",
       "service": "html5-apps-repo-rt",
-      "authenticationType": "xsuaa"
+      "authenticationType": "xsuaa",
+      "cacheControl": "no-store"
     },
+
     {
       "source": "^(.*)$",
-      "target": "$1",
+      "target": "/index.html",
       "service": "html5-apps-repo-rt",
-      "authenticationType": "xsuaa"
+      "authenticationType": "xsuaa",
+      "cacheControl": "no-store"
+    }
+  ],
+
+  "responseHeaders": [
+    {
+      "name": "X-Frame-Options",
+      "value": "SAMEORIGIN"
+    },
+    {
+      "name": "X-Content-Type-Options",
+      "value": "nosniff"
+    },
+    {
+      "name": "X-XSS-Protection",
+      "value": "1; mode=block"
+    },
+    {
+      "name": "Strict-Transport-Security",
+      "value": "max-age=31536000; includeSubDomains"
+    },
+    {
+      "name": "Content-Security-Policy",
+      "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.hana.ondemand.com https://*.cfapps.eu10.hana.ondemand.com https://*.cfapps.eu20.hana.ondemand.com; frame-ancestors 'self' https://*.hana.ondemand.com https://*.cfapps.eu10.hana.ondemand.com"
     }
   ]
 }

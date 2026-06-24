@@ -3,16 +3,15 @@
   "sap.app": {
     "id": "com.groupea.remunerations",
     "type": "application",
-    "i18n": "i18n/i18n.properties",
+    "ach": "PA-REM",
     "title": "Gestion des Rémunérations",
     "description": "Application de gestion des campagnes de rémunération (augmentations individuelles, bonus, GPEC)",
     "applicationVersion": {
       "version": "1.0.0"
     },
-    "resources": "resources.json",
     "dataSources": {
       "S4HANA_EmployeeSrv": {
-        "_comment": "A FAIRE — Connexion S/4HANA : activer le service /IWFND/MAINT_SERVICE pour API_EMPLOYEE_SRV dans la transaction SPRO > SAP Netweaver > Gateway",
+        "description": "A FAIRE — Connexion S/4HANA : activer API_EMPLOYEE_SRV via /IWFND/MAINT_SERVICE. Destination BTP 's4hana' : Type HTTP, Auth OAuth2SAMLBearerAssertion",
         "uri": "/s4hana/sap/opu/odata/sap/API_EMPLOYEE_SRV/",
         "type": "OData",
         "settings": {
@@ -25,24 +24,24 @@
         "type": "ODataAnnotation"
       },
       "S4HANA_OrgSrv": {
-        "_comment": "A FAIRE — Connexion S/4HANA : données org (entités, divisions) via PA_OM_ORGUNIT ou API_ORG_UNIT_SRV",
+        "description": "A FAIRE — Connexion S/4HANA : données org via API_ORG_UNIT_SRV",
         "uri": "/s4hana/sap/opu/odata/sap/API_ORG_UNIT_SRV/",
         "type": "OData",
         "settings": { "odataVersion": "2.0" }
       },
       "CAP_RemunerationSrv": {
-        "_comment": "A FAIRE — CAP Service : déployer le service CAP Node.js/Java sur BTP CF. Entités : Campaigns, Propositions, AuditLogs, AppUsers. Voir /cap/README.md",
+        "description": "A FAIRE — CAP Service : déployer le service CAP Node.js sur BTP CF. Destination BTP 'remunerations-srv' auto-injectée par MTA si même space.",
         "uri": "/cap/odata/v4/RemunerationService/",
         "type": "OData",
         "settings": { "odataVersion": "4.0" }
       },
       "BPA_WorkflowSrv": {
-        "_comment": "A FAIRE — Connexion Workflow : SAP Build Process Automation REST API. Créer les workflow definitions BPMN2 dans BPA Studio pour les types : augmentation, bonus, gpec",
+        "description": "A FAIRE — Connexion BPA : créer les Process Definitions BPMN2 dans BPA Studio. Destination BTP 'workflow-service' : Auth OAuth2ClientCredentials, scope workflow_instance_start",
         "uri": "/bpa/workflow/rest/v1/",
         "type": "JSON"
       },
       "SF_EmployeeSrv": {
-        "_comment": "A FAIRE — Alternative SuccessFactors : si les données RH viennent de SF EC au lieu de S/4HANA. Configurer le middleware d'intégration SF-S4HANA si les deux sont présents",
+        "description": "A FAIRE — SuccessFactors (alternative à S/4HANA HR) : destination 'successfactors' avec OAuth2SAMLBearerAssertion",
         "uri": "/sf/odata/v2/",
         "type": "OData",
         "settings": { "odataVersion": "2.0" }
@@ -51,7 +50,7 @@
     "crossNavigation": {
       "inbounds": {
         "Remuneration-manage": {
-          "_comment": "A FAIRE — FLP Tile : créer la tuile dans Build Work Zone > Site Manager > Content Manager. Semantic Object = Remuneration, Action = manage",
+          "description": "A FAIRE — FLP Tile : créer la tuile dans Work Zone > Site Manager > Content Manager. SemanticObject=Remuneration, Action=manage",
           "semanticObject": "Remuneration",
           "action": "manage",
           "title": "Gestion des Rémunérations",
@@ -76,7 +75,7 @@
       },
       "outbounds": {
         "Employee-display": {
-          "_comment": "A FAIRE — Navigation croisée vers fiche employé S/4HANA HR ou SuccessFactors",
+          "description": "A FAIRE — Navigation croisée vers fiche employé S/4HANA HR ou SuccessFactors",
           "semanticObject": "Employee",
           "action": "display"
         }
@@ -84,7 +83,7 @@
     }
   },
   "sap.ui": {
-    "technology": "React",
+    "technology": "Other",
     "icons": {
       "icon": "sap-icon://employee",
       "favIcon": "favicon.svg",
@@ -99,7 +98,6 @@
     "fullWidth": true
   },
   "sap.ui5": {
-    "_comment": "A FAIRE — Si migration partielle vers UI5 WebComponents : ajouter les libs ici. Pour une app React pure, ce bloc peut rester vide.",
     "dependencies": {
       "minUI5Version": "1.120.0",
       "libs": {}
@@ -111,7 +109,7 @@
   },
   "sap.fiori": {
     "registrationIds": ["F-REMU-001"],
-    "archeType": "transactional",
+    "archetype": "transactional",
     "defaultInbound": "Remuneration-manage"
   },
   "sap.cloud": {
@@ -119,11 +117,11 @@
     "public": false
   },
   "sap.platform.cf": {
-    "_comment": "A FAIRE — Renseigner le nom du HTML5 module tel que déclaré dans mta.yaml > modules > name",
+    "description": "A FAIRE — Renseigner le nom du HTML5 module tel que déclaré dans mta.yaml > modules > name",
     "ui5VersionNumber": "1.120.0"
   },
   "sap.workzone": {
-    "_comment": "A FAIRE — Paramètres spécifiques Build Work Zone : renseigner après création du site dans Work Zone > Site Manager",
+    "description": "A FAIRE — Renseigner après création du site dans Work Zone > Site Manager",
     "categories": ["HR", "Remuneration"],
     "tags": ["remuneration", "campagne", "augmentation", "bonus", "gpec"]
   }

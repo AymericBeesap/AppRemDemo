@@ -15,7 +15,7 @@
  */
 
 import { createContext, useContext, useState, useMemo, useRef } from 'react';
-import type { WorkflowTemplate, WorkflowStepView, WorkflowAction } from '../types/workflow';
+import type { WorkflowTemplate, WorkflowStepView, WorkflowAction, WorkflowPendingTask } from '../types/workflow';
 import { LocalWorkflowEngine, BpaWorkflowEngine } from '../services/workflowEngine';
 import { DEFAULT_WORKFLOW_TEMPLATES } from '../data/workflowTemplates';
 import type { CampaignType, Role } from '../data/mockData';
@@ -39,11 +39,11 @@ const MOCK_INSTANCES: Array<{
 interface WorkflowContextValue {
   templates: WorkflowTemplate[];
   getTemplate(type: CampaignType): WorkflowTemplate | undefined;
-  getStepsView(campaignId: string, type: CampaignType): WorkflowStepView[];
-  completeTask(campaignId: string, action: WorkflowAction, acteur: string, commentaire?: string): void;
-  startProcess(campaignId: string, campaignNom: string, type: CampaignType): void;
+  getStepsView(campaignId: string, type: CampaignType): Promise<WorkflowStepView[]>;
+  completeTask(campaignId: string, action: WorkflowAction, acteur: string, commentaire?: string): Promise<void>;
+  startProcess(campaignId: string, campaignNom: string, type: CampaignType): Promise<void>;
   updateTemplate(template: WorkflowTemplate): void;
-  getPendingTasks(role: Role): ReturnType<LocalWorkflowEngine['getPendingTasks']>;
+  getPendingTasks(role: Role): Promise<WorkflowPendingTask[]>;
 }
 
 const WorkflowContext = createContext<WorkflowContextValue | null>(null);
@@ -86,29 +86,29 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       return templates.find(t => t.campaignType === type && t.actif);
     },
 
-    getStepsView(campaignId, type) {
+    async getStepsView(campaignId, type) {
       // A FAIRE — Connexion Workflow BPA : en production, utiliser BPA execution-logs
       // GET /workflow/rest/v1/workflow-instances/{bpaInstanceId}/execution-logs
       const template = templates.find(t => t.campaignType === type && t.actif);
       if (!template) return [];
-      const instanceId = DEV ? `INST-${campaignId}` : campaignId; // BPA utilise l'UUID natif
+      const instanceId = DEV ? `INST-${campaignId}` : campaignId;
       return engineRef.current.getStepsView(instanceId, template);
     },
 
-    completeTask(campaignId, action, acteur, commentaire) {
+    async completeTask(campaignId, action, acteur, commentaire) {
       // A FAIRE — Connexion Workflow BPA : en production, récupérer l'instanceId BPA
       // depuis CAP (Campaigns.bpaInstanceId) avant d'appeler completeTask
       const instanceId = DEV ? `INST-${campaignId}` : campaignId;
-      engineRef.current.completeTask(instanceId, action, acteur, commentaire);
+      return engineRef.current.completeTask(instanceId, action, acteur, commentaire);
     },
 
-    startProcess(campaignId, campaignNom, type) {
+    async startProcess(campaignId, campaignNom, type) {
       // A FAIRE — Connexion Workflow BPA : stocker l'instanceId BPA retourné dans CAP
       // PATCH /cap/odata/v4/RemunerationService/Campaigns(${campaignId})
       // body: { bpaInstanceId: instanceId }
       const template = templates.find(t => t.campaignType === type && t.actif);
       if (!template) return;
-      engineRef.current.startProcess(campaignId, campaignNom, template.id);
+      await engineRef.current.startProcess(campaignId, campaignNom, template.id);
     },
 
     updateTemplate(updated) {
@@ -119,10 +119,9 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       );
     },
 
-    getPendingTasks(role) {
-      // A FAIRE — Connexion Workflow BPA : en production, appeler directement
-      // GET BPA_ENDPOINTS.MY_TASKS depuis le composant Dashboard avec React Query/SWR.
-      // Le BPA filtre automatiquement les tâches de l'utilisateur XSUAA connecté.
+    async getPendingTasks(role) {
+      // A FAIRE — Connexion Workflow BPA : en production, utiliser React Query avec
+      // GET BPA_ENDPOINTS.MY_TASKS. Le BPA filtre les tâches de l'utilisateur XSUAA connecté.
       return engineRef.current.getPendingTasks(role);
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps

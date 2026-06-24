@@ -78,15 +78,13 @@ export interface WorkflowStepView extends WorkflowStepConfig {
 }
 
 // ─── Interface adaptateur ─────────────────────────────────────────────────────
-// C'est cette interface qui sera réimplémentée côté BPA.
-// Règle de migration :
-//   LocalWorkflowEngine  → implémentation en mémoire (MVP)
-//   BpaWorkflowEngine    → appels REST SAP BPA (production)
-// Les consommateurs (pages React) n'importent que cette interface.
+// Toutes les méthodes sont async — obligatoire pour que BpaWorkflowEngine puisse
+// faire de vrais appels REST BPA sans race condition.
+// LocalWorkflowEngine encapsule ses opérations en mémoire dans des Promise.resolve().
 
 export interface WorkflowEngineAdapter {
-  /** Démarre une instance de processus pour une campagne. Retourne l'instanceId. */
-  startProcess(campaignId: string, campaignNom: string, templateId: string): string;
+  /** Démarre une instance de processus. Retourne l'instanceId (BPA UUID ou ID local). */
+  startProcess(campaignId: string, campaignNom: string, templateId: string): Promise<string>;
 
   /** L'acteur courant valide/rejette/... l'étape active. */
   completeTask(
@@ -94,14 +92,14 @@ export interface WorkflowEngineAdapter {
     action: WorkflowAction,
     acteur: string,
     commentaire?: string,
-  ): void;
+  ): Promise<void>;
 
   /** État courant d'une instance. */
-  getProcessInstance(instanceId: string): WorkflowProcessInstance | null;
+  getProcessInstance(instanceId: string): Promise<WorkflowProcessInstance | null>;
 
   /** Tâches en attente filtrées par rôle (alimente le dashboard). */
-  getPendingTasks(role: Role): WorkflowPendingTask[];
+  getPendingTasks(role: Role): Promise<WorkflowPendingTask[]>;
 
   /** Étapes avec statut dérivé de l'instance (pour rendu du stepper). */
-  getStepsView(instanceId: string, template: WorkflowTemplate): WorkflowStepView[];
+  getStepsView(instanceId: string, template: WorkflowTemplate): Promise<WorkflowStepView[]>;
 }
