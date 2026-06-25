@@ -9,9 +9,11 @@
 import { campaigns, employees, propositions, auditLogs, budgetByEntity, campaignStatusLabels, campaignTypeLabels, workflowTasks } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import type { SessionUser } from '../context/UserContext';
 import type { Employee, Proposition } from '../data/mockData';
+import PropositionValidationDrawer from '../components/PropositionValidationDrawer';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -50,7 +52,7 @@ function getMyTeam(user: SessionUser): Employee[] {
   return [];
 }
 
-// ── Vue Manager ───────────────────────────────────────────────────────────────
+// ── Vue Manager — interface épurée ────────────────────────────────────────────
 
 function ManagerDashboard({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
@@ -65,121 +67,61 @@ function ManagerDashboard({ user }: { user: SessionUser }) {
     : [];
 
   const nbSaisis = myTeam.filter(e => myProps.some(p => p.matricule === e.matricule)).length;
-  const allDone = myTeam.length > 0 && nbSaisis === myTeam.length;
+  const allDone  = myTeam.length > 0 && nbSaisis === myTeam.length;
+  const daysLeft = openCampaign
+    ? Math.ceil((new Date(openCampaign.dateFin).getTime() - Date.now()) / 86400000)
+    : null;
 
   return (
     <>
       <div className="page-header">
-        <div>
-          <h1>Bonjour, {user.prenom}</h1>
-          <p>
-            {myTeam.length > 0
-              ? `${myTeam.length} collaborateur${myTeam.length > 1 ? 's' : ''} dans votre équipe · ${user.perimetre.join(', ')}`
-              : `Aucun collaborateur rattaché · ${user.perimetre.join(', ')}`}
-          </p>
-        </div>
-        {allDone && (
-          <span className="badge badge-success" style={{ fontSize: '.85rem', padding: '.3rem .75rem' }}>
-            ✓ Toutes vos propositions sont saisies
-          </span>
-        )}
+        <h1>Bonjour, {user.prenom}</h1>
+        <p>{user.perimetre.join(' · ')}</p>
       </div>
 
       {openCampaign ? (
         <div className="section-card">
-          {/* En-tête campagne */}
-          <div style={{
-            background: '#f0f6ff', borderRadius: '.5rem .5rem 0 0',
-            padding: '1rem 1.25rem',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            borderBottom: '1px solid #dce8f7',
-          }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0a6ed1' }}>{openCampaign.nom}</div>
-              <div style={{ fontSize: '.78rem', color: '#6b6b6b', marginTop: '.2rem' }}>
-                Clôture le{' '}
-                <strong style={{ color: '#1a1a1a' }}>
-                  {new Date(openCampaign.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </strong>
-              </div>
+          <div style={{ padding: '1.25rem 1.5rem' }}>
+            {/* Nom campagne */}
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--primary)', marginBottom: '.75rem' }}>
+              {openCampaign.nom}
             </div>
-            <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
-              <span style={{ fontSize: '.82rem', color: '#6b6b6b' }}>{nbSaisis}/{myTeam.length} saisis</span>
-              <span className="badge badge-success">Ouverte</span>
-              <button className="btn btn-primary btn-sm" onClick={() => navigate(`/campaigns/${openCampaign.id}`)}>
-                Saisir mes propositions →
+
+            {/* Progression */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.4rem' }}>
+              <span style={{ fontSize: '.82rem', color: 'var(--text-secondary)' }}>Propositions saisies</span>
+              <span style={{ fontWeight: 700, fontSize: '.9rem' }}>
+                {nbSaisis} / {myTeam.length}
+                {allDone && <span className="badge badge-success" style={{ marginLeft: '.5rem' }}>✓ Terminé</span>}
+              </span>
+            </div>
+            <div className="progress-bar-wrap" style={{ height: 8, marginBottom: '1rem' }}>
+              <div
+                className={`progress-bar-fill ${allDone ? 'success' : ''}`}
+                style={{ width: myTeam.length > 0 ? `${(nbSaisis / myTeam.length) * 100}%` : '0%' }}
+              />
+            </div>
+
+            {/* Footer : deadline + CTA */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '.82rem', color: daysLeft !== null && daysLeft <= 5 ? 'var(--error)' : 'var(--text-secondary)' }}>
+                Clôture le <strong>{new Date(openCampaign.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</strong>
+                {daysLeft !== null && <span style={{ marginLeft: '.4rem' }}>(J-{daysLeft})</span>}
+              </span>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(`/campaigns/${openCampaign.id}`)}
+              >
+                {allDone ? '✓ Voir mes propositions' : 'Saisir mes propositions →'}
               </button>
             </div>
           </div>
-
-          {/* Liste équipe */}
-          <div>
-            {myTeam.length === 0 ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#a0a0a0' }}>
-                Aucun collaborateur éligible dans votre périmètre.
-              </div>
-            ) : (
-              myTeam.map(emp => {
-                const prop = myProps.find(p => p.matricule === emp.matricule);
-                return (
-                  <div
-                    key={emp.matricule}
-                    onClick={() => navigate(`/campaigns/${openCampaign.id}`)}
-                    style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '1rem 1.25rem', borderBottom: '1px solid #f5f5f5',
-                      cursor: 'pointer', transition: 'background .12s',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f9f9f9')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '')}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-                      <div className="avatar" style={{ width: 38, height: 38, fontSize: '.75rem', background: emp.genre === 'F' ? '#9c27b0' : '#0a6ed1' }}>
-                        {emp.prenom[0]}{emp.nom[0]}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{emp.prenom} {emp.nom}</div>
-                        <div style={{ fontSize: '.75rem', color: '#6b6b6b' }}>
-                          {emp.grade} Éch.{emp.echelon} · {emp.division} · {fmtEur(emp.salaireActuel)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {prop ? (
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 700, color: '#0a6ed1', fontSize: '1rem' }}>
-                          +{prop.pourcentage.toFixed(1)}%
-                          <span style={{ fontWeight: 400, fontSize: '.85rem', color: '#6b6b6b', marginLeft: '.4rem' }}>
-                            ({fmtEur(prop.montant)})
-                          </span>
-                        </div>
-                        <span className={workflowBadge[prop.statut]} style={{ fontSize: '.7rem', marginTop: '.2rem', display: 'inline-block' }}>
-                          {prop.statut === 'valide' ? '✓ Validé' : prop.statut === 'en_cours' ? 'En cours' : 'En attente'}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="badge badge-neutral" style={{ fontSize: '.78rem' }}>À saisir</span>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {!allDone && myTeam.length > 0 && (
-            <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'center' }}>
-              <button className="btn btn-primary" onClick={() => navigate(`/campaigns/${openCampaign.id}`)}>
-                Saisir mes propositions →
-              </button>
-            </div>
-          )}
         </div>
       ) : (
-        <div style={{
-          background: '#fff', border: '1px dashed #c9c9c9', borderRadius: '.5rem',
-          padding: '3rem', textAlign: 'center', color: '#a0a0a0', fontSize: '.9rem',
-        }}>
-          Aucune campagne ouverte pour votre périmètre actuellement.
+        <div className="empty-state" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px dashed var(--border)', minHeight: 200 }}>
+          <div className="empty-state-icon">📋</div>
+          <h3>Aucune campagne ouverte</h3>
+          <p>Aucune campagne de rémunération n'est actuellement ouverte pour votre périmètre.</p>
         </div>
       )}
     </>
@@ -190,6 +132,7 @@ function ManagerDashboard({ user }: { user: SessionUser }) {
 
 function DirecteurDashboard({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
+  const [validatingId, setValidatingId] = useState<string | null>(null);
 
   const myTasks = workflowTasks
     .filter(t => t.rolesEligibles.includes(user.role))
@@ -266,7 +209,7 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
               {pendingValidation.map(p => {
                 const emp = employees.find(e => e.matricule === p.matricule);
                 return (
-                  <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/campaigns/${p.campaignId}`)}>
+                  <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => setValidatingId(p.id)}>
                     <td style={{ fontWeight: 600 }}>{emp?.prenom} {emp?.nom}</td>
                     <td style={{ color: '#0a6ed1', fontWeight: 700 }}>+{p.pourcentage.toFixed(1)}%</td>
                     <td>{fmtEur(p.montant)}</td>
@@ -309,6 +252,13 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
           );
         })}
       </div>
+
+      {/* Drawer validation proposition */}
+      <PropositionValidationDrawer
+        propositionId={validatingId}
+        onClose={() => setValidatingId(null)}
+        onValidated={() => setValidatingId(null)}
+      />
     </>
   );
 }

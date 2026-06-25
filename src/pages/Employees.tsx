@@ -132,13 +132,20 @@ export default function Employees() {
                     {emp.eligible ? '✓ Oui' : 'Non'}
                   </span>
                 </td>
-                <td>
+                <td style={{ whiteSpace: 'nowrap' }}>
                   <button
                     className="btn btn-sm btn-ghost"
-                    style={{ padding: '.2rem .5rem', fontSize: '.75rem' }}
+                    style={{ padding: '.2rem .5rem', fontSize: '.75rem', marginRight: '.25rem' }}
                     onClick={e => { e.stopPropagation(); setDrawerMatricule(emp.matricule); }}
                   >
                     Détail →
+                  </button>
+                  <button
+                    className="btn btn-sm btn-ghost"
+                    style={{ padding: '.2rem .5rem', fontSize: '.75rem' }}
+                    onClick={e => { e.stopPropagation(); navigate('/bsi', { state: { matricule: emp.matricule } }); }}
+                  >
+                    BSI
                   </button>
                 </td>
               </tr>

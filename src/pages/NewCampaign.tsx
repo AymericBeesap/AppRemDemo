@@ -19,7 +19,7 @@ const typeConfig: Record<CampaignType, { label: string; icon: string; desc: stri
   gpec:         { label: 'GPEC',                         icon: '🎓', color: '#a05000', desc: 'Gestion des avancements par grade et échelon, avec règles automatiques et accélérations possibles.' },
 };
 
-const STEPS = ['Type', 'Informations', 'Population & Éligibilité', 'Paramétrage', 'Récapitulatif'];
+const STEPS = ['Type', 'Configuration', 'Récapitulatif'];
 
 interface Form {
   type: CampaignType | '';
@@ -52,6 +52,7 @@ export default function NewCampaign() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(defaultForm);
   const [errors, setErrors] = useState<Partial<Form>>({});
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const setField = <K extends keyof Form>(key: K, val: Form[K]) =>
     setForm(f => ({ ...f, [key]: val }));
@@ -77,8 +78,8 @@ export default function NewCampaign() {
       if (!form.dateDebut) e.dateDebut = 'Date début requise.';
       if (!form.dateFin) e.dateFin = 'Date fin requise.';
       if (form.entites.length === 0) e.entites = ['Au moins une entité.'];
+      if (!form.enveloppe || parseFloat(form.enveloppe) <= 0) e.enveloppe = 'Enveloppe budgétaire requise.';
     }
-    if (step === 3 && (!form.enveloppe || parseFloat(form.enveloppe) <= 0)) e.enveloppe = 'Enveloppe requise.';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -158,131 +159,116 @@ export default function NewCampaign() {
             </div>
           )}
 
-          {/* Étape 1 : Informations */}
+          {/* Étape 1 : Configuration (Informations + Budget + Population avancée) */}
           {step === 1 && (
-            <div style={{ display: 'grid', gap: '1.25rem', maxWidth: 560 }}>
-              <h2 style={{ fontSize: '1.1rem' }}>Informations générales</h2>
-
-              <FormField label="Nom de la campagne *" error={errors.nom}>
-                <input className="input-field" style={{ width: '100%' }} value={form.nom}
-                  placeholder={`ex: ${typeConfig[form.type as CampaignType]?.label ?? 'Campagne'} ${new Date().getFullYear() + 1}`}
-                  onChange={e => setField('nom', e.target.value)} />
-              </FormField>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <FormField label="Date de début *" error={errors.dateDebut}>
-                  <input type="date" className="input-field" style={{ width: '100%' }} value={form.dateDebut}
-                    onChange={e => setField('dateDebut', e.target.value)} />
-                </FormField>
-                <FormField label="Date de fin *" error={errors.dateFin}>
-                  <input type="date" className="input-field" style={{ width: '100%' }} value={form.dateFin}
-                    onChange={e => setField('dateFin', e.target.value)} />
-                </FormField>
-              </div>
-
-              <FormField label="Entités concernées *" error={Array.isArray(errors.entites) ? errors.entites[0] : undefined}>
-                <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-                  {ENTITIES.map(e => (
-                    <button key={e} type="button"
-                      className={`btn btn-sm ${form.entites.includes(e) ? 'btn-primary' : 'btn-ghost'}`}
-                      onClick={() => toggleEntity(e)}
-                    >{e}</button>
-                  ))}
+            <div style={{ display: 'grid', gap: '1.5rem' }}>
+              {/* Section A : Informations générales */}
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '.8rem', textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-secondary)', marginBottom: '.875rem' }}>
+                  Informations générales
                 </div>
-              </FormField>
-            </div>
-          )}
-
-          {/* Étape 2 : Population */}
-          {step === 2 && (
-            <div>
-              <h2 style={{ fontSize: '1.1rem', marginBottom: '1.25rem' }}>Population et règles d'éligibilité</h2>
-              <div className="grid-2" style={{ alignItems: 'start' }}>
-                <div style={{ display: 'grid', gap: '1.25rem' }}>
-                  <FormField label="Ancienneté minimale (mois)">
-                    <input type="number" className="input-field" style={{ width: '100%' }} value={form.ancienneteMin}
-                      min={0} max={60} onChange={e => setField('ancienneteMin', e.target.value)} />
+                <div style={{ display: 'grid', gap: '1rem', maxWidth: 560 }}>
+                  <FormField label="Nom de la campagne *" error={errors.nom}>
+                    <input className="input-field" style={{ width: '100%' }} value={form.nom}
+                      placeholder={`ex: ${typeConfig[form.type as CampaignType]?.label ?? 'Campagne'} ${new Date().getFullYear() + 1}`}
+                      onChange={e => setField('nom', e.target.value)} />
                   </FormField>
-                  <FormField label="Grades à exclure">
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <FormField label="Date de début *" error={errors.dateDebut}>
+                      <input type="date" className="input-field" style={{ width: '100%' }} value={form.dateDebut}
+                        onChange={e => setField('dateDebut', e.target.value)} />
+                    </FormField>
+                    <FormField label="Date de fin *" error={errors.dateFin}>
+                      <input type="date" className="input-field" style={{ width: '100%' }} value={form.dateFin}
+                        onChange={e => setField('dateFin', e.target.value)} />
+                    </FormField>
+                  </div>
+                  <FormField label="Entités concernées *" error={Array.isArray(errors.entites) ? errors.entites[0] : undefined}>
                     <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
-                      {GRADES.map(g => (
-                        <button key={g} type="button"
-                          className={`btn btn-sm ${form.gradesExclus.includes(g) ? 'btn-primary' : 'btn-ghost'}`}
-                          style={{ ...(form.gradesExclus.includes(g) ? { background: '#bb0000', borderColor: '#bb0000' } : {}) }}
-                          onClick={() => toggleGrade(g)}
-                        >{g}</button>
+                      {ENTITIES.map(e => (
+                        <button key={e} type="button"
+                          className={`btn btn-sm ${form.entites.includes(e) ? 'btn-primary' : 'btn-ghost'}`}
+                          onClick={() => toggleEntity(e)}
+                        >{e}</button>
                       ))}
                     </div>
-                    <div style={{ fontSize: '.75rem', color: '#6b6b6b', marginTop: '.3rem' }}>Les grades sélectionnés (rouge) seront exclus.</div>
                   </FormField>
                 </div>
+              </div>
 
-                <div className="section-card" style={{ marginBottom: 0 }}>
-                  <div className="section-card-header" style={{ background: '#e8f0fc' }}>
-                    <h2>Population éligible estimée</h2>
-                    <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#0a6ed1' }}>{eligibles.length}</span>
-                  </div>
-                  <table className="data-table" style={{ fontSize: '.8rem' }}>
-                    <thead><tr><th>Nom</th><th>Entité</th><th>Grade</th><th>Ancienneté</th></tr></thead>
-                    <tbody>
-                      {eligibles.slice(0, 8).map(e => (
-                        <tr key={e.matricule}>
-                          <td style={{ fontWeight: 500 }}>{e.prenom} {e.nom}</td>
-                          <td>{e.entite}</td>
-                          <td><span className="chip">{e.grade}</span></td>
-                          <td>{e.anciennete} ans</td>
-                        </tr>
-                      ))}
-                      {eligibles.length > 8 && (
-                        <tr><td colSpan={4} style={{ textAlign: 'center', color: '#a0a0a0' }}>+{eligibles.length - 8} autres</td></tr>
-                      )}
-                    </tbody>
-                  </table>
+              {/* Section B : Budget & workflow */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '.8rem', textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-secondary)', marginBottom: '.875rem' }}>
+                  Budget & workflow
                 </div>
+                <div style={{ display: 'grid', gap: '1rem', maxWidth: 560 }}>
+                  <FormField label="Enveloppe budgétaire (€) *" error={errors.enveloppe}>
+                    <input type="number" className="input-field" style={{ width: '100%' }} value={form.enveloppe}
+                      placeholder="ex: 450000" min={0} onChange={e => setField('enveloppe', e.target.value)} />
+                  </FormField>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <FormField label="Seuil d'alerte budget (%)">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                        <input type="range" min={50} max={99} value={form.alerteSeuil}
+                          onChange={e => setField('alerteSeuil', e.target.value)} style={{ flex: 1 }} />
+                        <span style={{ fontWeight: 700, color: 'var(--primary)', minWidth: 38 }}>{form.alerteSeuil}%</span>
+                      </div>
+                    </FormField>
+                    <FormField label="Niveaux de validation">
+                      <div style={{ display: 'flex', gap: '.35rem' }}>
+                        {['2', '3', '4'].map(n => (
+                          <button key={n} type="button"
+                            className={`btn btn-sm ${form.workflowNiveaux === n ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => setField('workflowNiveaux', n)}>{n}</button>
+                        ))}
+                      </div>
+                      <div style={{ fontSize: '.72rem', color: 'var(--text-secondary)', marginTop: '.3rem' }}>
+                        {form.workflowNiveaux === '2' ? 'Manager → DRH' : form.workflowNiveaux === '3' ? 'Manager → Dir. → DRH' : 'Manager → Dir. → RRH → DRH'}
+                      </div>
+                    </FormField>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section C : Options avancées — population (repliée par défaut) */}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(v => !v)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '.5rem', fontSize: '.875rem', color: 'var(--primary)', fontWeight: 600, padding: 0 }}
+                >
+                  <span style={{ transition: 'transform .2s', display: 'inline-block', transform: showAdvanced ? 'rotate(90deg)' : 'rotate(0)' }}>▶</span>
+                  Options avancées — Population & éligibilité
+                  <span style={{ fontSize: '.72rem', fontWeight: 400, color: 'var(--text-secondary)' }}>(ancienneté, grades exclus)</span>
+                </button>
+                {showAdvanced && (
+                  <div style={{ marginTop: '1rem', display: 'grid', gap: '1rem', maxWidth: 560 }}>
+                    <FormField label="Ancienneté minimale (mois)">
+                      <input type="number" className="input-field" style={{ width: '100%' }} value={form.ancienneteMin}
+                        min={0} max={60} onChange={e => setField('ancienneteMin', e.target.value)} />
+                    </FormField>
+                    <FormField label="Grades à exclure">
+                      <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+                        {GRADES.map(g => (
+                          <button key={g} type="button"
+                            className={`btn btn-sm ${form.gradesExclus.includes(g) ? 'btn-primary' : 'btn-ghost'}`}
+                            style={{ ...(form.gradesExclus.includes(g) ? { background: '#bb0000', borderColor: '#bb0000' } : {}) }}
+                            onClick={() => toggleGrade(g)}
+                          >{g}</button>
+                        ))}
+                      </div>
+                      <div style={{ fontSize: '.75rem', color: 'var(--text-secondary)', marginTop: '.3rem' }}>
+                        Grades en rouge = exclus · Population estimée : <strong>{eligibles.length} collaborateurs</strong>
+                      </div>
+                    </FormField>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Étape 3 : Paramétrage */}
-          {step === 3 && (
-            <div style={{ display: 'grid', gap: '1.25rem', maxWidth: 560 }}>
-              <h2 style={{ fontSize: '1.1rem' }}>Paramétrage budgétaire et workflow</h2>
-
-              <FormField label="Enveloppe budgétaire (€) *" error={errors.enveloppe}>
-                <input type="number" className="input-field" style={{ width: '100%' }} value={form.enveloppe}
-                  placeholder="ex: 450000" min={0} onChange={e => setField('enveloppe', e.target.value)} />
-              </FormField>
-
-              <FormField label="Seuil d'alerte budget (%)">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <input type="range" min={50} max={99} value={form.alerteSeuil}
-                    onChange={e => setField('alerteSeuil', e.target.value)}
-                    style={{ flex: 1 }} />
-                  <span style={{ fontWeight: 700, color: '#0a6ed1', minWidth: 40 }}>{form.alerteSeuil}%</span>
-                </div>
-                <div style={{ fontSize: '.75rem', color: '#6b6b6b' }}>Alerte déclenchée quand la consommation dépasse ce seuil.</div>
-              </FormField>
-
-              <FormField label="Niveaux de validation workflow">
-                <div style={{ display: 'flex', gap: '.5rem' }}>
-                  {['2', '3', '4'].map(n => (
-                    <button key={n} type="button"
-                      className={`btn btn-sm ${form.workflowNiveaux === n ? 'btn-primary' : 'btn-ghost'}`}
-                      onClick={() => setField('workflowNiveaux', n)}
-                    >
-                      {n} niveaux
-                    </button>
-                  ))}
-                </div>
-                <div style={{ fontSize: '.75rem', color: '#6b6b6b', marginTop: '.3rem' }}>
-                  {form.workflowNiveaux === '2' ? 'Manager → DRH' : form.workflowNiveaux === '3' ? 'Manager → Directeur → DRH' : 'Manager → Directeur → RRH → DRH'}
-                </div>
-              </FormField>
-            </div>
-          )}
-
-          {/* Étape 4 : Récapitulatif */}
-          {step === 4 && (
+          {/* Étape 2 : Récapitulatif */}
+          {step === 2 && (
             <div>
               <h2 style={{ fontSize: '1.1rem', marginBottom: '1.25rem' }}>Récapitulatif avant création</h2>
               <div className="grid-2">

@@ -9,6 +9,7 @@
 // La génération PDF actuelle utilise html2canvas + jsPDF (déjà installés).
 
 import { useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { employees } from '../data/mockData';
 import type { Employee } from '../data/mockData';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
@@ -24,8 +25,13 @@ const GRADE_LABELS: Record<string, string> = {
 };
 
 export default function Bsi() {
+  const location = useLocation();
   const [search, setSearch]   = useState('');
-  const [selected, setSelected] = useState<Employee | null>(null);
+  const [selected, setSelected] = useState<Employee | null>(
+    () => location.state?.matricule
+      ? employees.find(e => e.matricule === location.state.matricule) ?? null
+      : null
+  );
   const [generating, setGenerating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 

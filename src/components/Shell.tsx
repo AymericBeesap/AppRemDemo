@@ -45,11 +45,11 @@ const icons = {
   ),
 };
 
+// BSI retiré du sidebar (accessible via Collaborateurs → "Générer BSI" ou URL directe)
 const NAV_ITEMS: { path: string; label: string; icon: React.ReactNode; roles: Role[] }[] = [
   { path: '/',           label: 'Accueil',            icon: icons.home,      roles: ['Manager', 'Directeur', 'RRH', 'DRH', 'SIRH'] },
   { path: '/campaigns',  label: 'Campagnes',          icon: icons.campaigns, roles: ['Directeur', 'RRH', 'DRH', 'SIRH'] },
   { path: '/employees',  label: 'Collaborateurs',     icon: icons.employees, roles: ['Directeur', 'RRH', 'DRH', 'SIRH'] },
-  { path: '/bsi',        label: 'BSI',                icon: icons.bsi,       roles: ['RRH', 'DRH', 'SIRH'] },
   { path: '/reporting',  label: 'Reporting & Équité', icon: icons.reporting, roles: ['RRH', 'DRH', 'SIRH'] },
   { path: '/audit',      label: "Journal d'audit",    icon: icons.audit,     roles: ['DRH', 'SIRH'] },
   { path: '/admin',      label: 'Administration',     icon: icons.admin,     roles: ['SIRH'] },
@@ -59,6 +59,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const { user, allUsers, switchUser } = useUser();
   const navigate = useNavigate();
   const navItems = NAV_ITEMS.filter(item => item.roles.includes(user.role));
+  const showSidebar = navItems.length > 1;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -228,8 +229,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="app-content">
-        {/* ── Sidebar ───────────────────────────────────────────────── */}
-        <nav className="sidebar">
+        {/* ── Sidebar — masquée si un seul item de navigation (ex: Manager) ── */}
+        {showSidebar && <nav className="sidebar">
           {/* Périmètre utilisateur */}
           <div style={{ padding: '.875rem 1.25rem .625rem', borderBottom: '1px solid var(--border)' }}>
             <div style={{ fontSize: '.68rem', color: 'var(--text-disabled)', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700, marginBottom: '.25rem' }}>
@@ -279,7 +280,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             </div>
             <div style={{ marginTop: '.2rem' }}>© {new Date().getFullYear()} {user.entite}</div>
           </div>
-        </nav>
+        </nav>}
 
         {/* ── Main ─────────────────────────────────────────────────── */}
         <main className="main-content">
