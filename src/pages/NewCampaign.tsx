@@ -10,7 +10,7 @@ import { employees, type CampaignType } from '../data/mockData';
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 
-const ENTITIES = ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'];
+const ENTITIES = ['Groupe Horizon', 'Horizon France', 'Horizon Rail'];
 const GRADES   = ['P1', 'P2', 'P3', 'P4', 'M1'];
 
 const typeConfig: Record<CampaignType, { label: string; icon: string; desc: string; color: string }> = {
@@ -39,7 +39,7 @@ const defaultForm: Form = {
   nom: '',
   dateDebut: '2026-09-01',
   dateFin: '2026-10-31',
-  entites: ['Entité 2 Services GIE'],
+  entites: ['Groupe Horizon'],
   enveloppe: '',
   gradesExclus: [],
   ancienneteMin: '6',

@@ -43,7 +43,7 @@ function buildMockNotifications(): AppNotification[] {
       id: 'N003',
       type: 'budget',
       title: 'Seuil budgétaire atteint',
-      body: 'Entité 3 France — enveloppe consommée à 92%. Arbitrage requis.',
+      body: 'Horizon France — enveloppe consommée à 92%. Arbitrage requis.',
       lien: '/campaigns',
       date: new Date(now.getTime() - 7200000).toISOString(),
       read: false,

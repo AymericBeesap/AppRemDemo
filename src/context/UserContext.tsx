@@ -50,11 +50,11 @@ export interface SessionUser {
 // Voir : SAP BTP Security > Trust and Authorization > Trust Configuration.
 
 const DEV_USERS: SessionUser[] = [
-  { id: 'U001', prenom: 'Sophie',   nom: 'Dupont',   role: 'DRH',       entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'],    email: 'sophie.dupont@eurotunnel.com' },
-  { id: 'U002', prenom: 'Thomas',   nom: 'Renard',   role: 'SIRH',      entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'],    email: 'thomas.renard@eurotunnel.com' },
-  { id: 'U003', prenom: 'Marie',    nom: 'Lefort',   role: 'RRH',       entite: 'Entité 3 France',        perimetre: ['Entité 3 France'],                                        email: 'marie.lefort@europorte.com' },
-  { id: 'U006', prenom: 'Philippe', nom: 'Rousseau', role: 'Directeur', entite: 'Entité 2 Services GIE', perimetre: ['Finance – Entité 2 Services GIE'], matricule: 'E010',     email: 'ph.rousseau@eurotunnel.com' },
-  { id: 'U008', prenom: 'Claire',   nom: 'Mercier',  role: 'Manager',   entite: 'Entité 2 Services GIE', perimetre: ['RH – Entité 2 Services GIE'],      matricule: 'E011',     email: 'c.mercier@eurotunnel.com' },
+  { id: 'U001', prenom: 'Sophie',   nom: 'Dupont',   role: 'DRH',       entite: 'Groupe Horizon', perimetre: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'],    email: 'sophie.dupont@horizon-group.fr' },
+  { id: 'U002', prenom: 'Thomas',   nom: 'Renard',   role: 'SIRH',      entite: 'Groupe Horizon', perimetre: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'],    email: 'thomas.renard@horizon-group.fr' },
+  { id: 'U003', prenom: 'Marie',    nom: 'Lefort',   role: 'RRH',       entite: 'Horizon France',        perimetre: ['Horizon France'],                                        email: 'marie.lefort@horizon-france.fr' },
+  { id: 'U006', prenom: 'Philippe', nom: 'Rousseau', role: 'Directeur', entite: 'Groupe Horizon', perimetre: ['Finance – Groupe Horizon'], matricule: 'E010',     email: 'ph.rousseau@horizon-group.fr' },
+  { id: 'U008', prenom: 'Claire',   nom: 'Mercier',  role: 'Manager',   entite: 'Groupe Horizon', perimetre: ['RH – Groupe Horizon'],      matricule: 'E011',     email: 'c.mercier@horizon-group.fr' },
 ];
 
 // Les types SAP ushell (window.sap.ushell.Container, UserInfo, Navigation...)
@@ -121,7 +121,7 @@ async function loadBTPUser(): Promise<SessionUser> {
 
   // Fallback temporaire en attendant le CAP service
   // A FAIRE — Supprimer ce fallback quand fetchUserRoleFromCAP() est opérationnel
-  const roleData: UserRoleResponse = { role: 'DRH', entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE'] };
+  const roleData: UserRoleResponse = { role: 'DRH', entite: 'Groupe Horizon', perimetre: ['Groupe Horizon'] };
 
   return {
     id:        id || email || 'unknown',

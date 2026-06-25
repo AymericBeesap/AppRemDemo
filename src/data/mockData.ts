@@ -187,14 +187,14 @@ export const currentUser: CurrentUser = {
   nom: 'Dupont',
   prenom: 'Sophie',
   role: 'DRH',
-  entite: 'Entité 2 Services GIE',
+  entite: 'Groupe Horizon',
   matricule: 'M00001',
 };
 
 export const employees: Employee[] = [
   {
     matricule: 'E001', nom: 'Martin', prenom: 'Alice', genre: 'F',
-    entite: 'Entité 2 Services GIE', division: 'Finance', manager: 'E010', directeur: 'E020',
+    entite: 'Groupe Horizon', division: 'Finance', manager: 'E010', directeur: 'E020',
     grade: 'P3', echelon: 2, dateEntree: '2018-03-15', anciennete: 8,
     salaireActuel: 52000,
     historiqueRemuneration: [
@@ -206,7 +206,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E002', nom: 'Bernard', prenom: 'Luc', genre: 'M',
-    entite: 'Entité 2 Services GIE', division: 'Finance', manager: 'E010', directeur: 'E020',
+    entite: 'Groupe Horizon', division: 'Finance', manager: 'E010', directeur: 'E020',
     grade: 'P3', echelon: 3, dateEntree: '2016-09-01', anciennete: 10,
     salaireActuel: 58000,
     historiqueRemuneration: [
@@ -218,7 +218,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E003', nom: 'Leroy', prenom: 'Camille', genre: 'F',
-    entite: 'Entité 2 Services GIE', division: 'RH', manager: 'E011', directeur: 'E020',
+    entite: 'Groupe Horizon', division: 'RH', manager: 'E011', directeur: 'E020',
     grade: 'P2', echelon: 1, dateEntree: '2021-06-14', anciennete: 5,
     salaireActuel: 42000,
     historiqueRemuneration: [
@@ -230,7 +230,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E004', nom: 'Moreau', prenom: 'Thomas', genre: 'M',
-    entite: 'Entité 3 France', division: 'IT', manager: 'E012', directeur: 'E021',
+    entite: 'Horizon France', division: 'IT', manager: 'E012', directeur: 'E021',
     grade: 'P4', echelon: 1, dateEntree: '2020-01-07', anciennete: 6,
     salaireActuel: 61000,
     historiqueRemuneration: [
@@ -242,7 +242,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E005', nom: 'Simon', prenom: 'Nathalie', genre: 'F',
-    entite: 'Entité 3 France', division: 'IT', manager: 'E012', directeur: 'E021',
+    entite: 'Horizon France', division: 'IT', manager: 'E012', directeur: 'E021',
     grade: 'P4', echelon: 2, dateEntree: '2019-04-22', anciennete: 7,
     salaireActuel: 65000,
     historiqueRemuneration: [
@@ -254,7 +254,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E006', nom: 'Laurent', prenom: 'Pierre', genre: 'M',
-    entite: 'Entité 2 Services GIE', division: 'Commercial', manager: 'E013', directeur: 'E022',
+    entite: 'Groupe Horizon', division: 'Commercial', manager: 'E013', directeur: 'E022',
     grade: 'P2', echelon: 2, dateEntree: '2022-09-05', anciennete: 4,
     salaireActuel: 44000,
     historiqueRemuneration: [
@@ -266,7 +266,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E007', nom: 'Petit', prenom: 'Julie', genre: 'F',
-    entite: 'Entité 2 Services GIE', division: 'Commercial', manager: 'E013', directeur: 'E022',
+    entite: 'Groupe Horizon', division: 'Commercial', manager: 'E013', directeur: 'E022',
     grade: 'P2', echelon: 2, dateEntree: '2022-01-10', anciennete: 4,
     salaireActuel: 43000,
     historiqueRemuneration: [
@@ -278,7 +278,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E008', nom: 'Dubois', prenom: 'Marc', genre: 'M',
-    entite: 'SOCORAIL', division: 'Opérations', manager: 'E014', directeur: 'E023',
+    entite: 'Horizon Rail', division: 'Opérations', manager: 'E014', directeur: 'E023',
     grade: 'P1', echelon: 3, dateEntree: '2015-11-03', anciennete: 11,
     salaireActuel: 38000,
     historiqueRemuneration: [
@@ -290,7 +290,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E009', nom: 'Garcia', prenom: 'Elena', genre: 'F',
-    entite: 'SOCORAIL', division: 'Opérations', manager: 'E014', directeur: 'E023',
+    entite: 'Horizon Rail', division: 'Opérations', manager: 'E014', directeur: 'E023',
     grade: 'P1', echelon: 2, dateEntree: '2017-07-18', anciennete: 9,
     salaireActuel: 36500,
     historiqueRemuneration: [
@@ -302,7 +302,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E010', nom: 'Rousseau', prenom: 'Philippe', genre: 'M',
-    entite: 'Entité 2 Services GIE', division: 'Finance', manager: 'E020', directeur: 'E020',
+    entite: 'Groupe Horizon', division: 'Finance', manager: 'E020', directeur: 'E020',
     grade: 'M1', echelon: 2, dateEntree: '2013-02-01', anciennete: 13,
     salaireActuel: 78000,
     historiqueRemuneration: [
@@ -314,7 +314,7 @@ export const employees: Employee[] = [
   },
   {
     matricule: 'E011', nom: 'Mercier', prenom: 'Claire', genre: 'F',
-    entite: 'Entité 2 Services GIE', division: 'RH', manager: 'E020', directeur: 'E020',
+    entite: 'Groupe Horizon', division: 'RH', manager: 'E020', directeur: 'E020',
     grade: 'M1', echelon: 1, dateEntree: '2015-05-20', anciennete: 11,
     salaireActuel: 72000,
     historiqueRemuneration: [
@@ -337,7 +337,7 @@ export const campaigns: Campaign[] = [
     enveloppe: 450000,
     consomme: 287500,
     population: 4005,
-    entites: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'],
+    entites: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'],
     workflowEtapes: [
       { ordre: 1, role: 'Manager', libelle: 'Saisie des propositions', statut: 'valide', responsable: 'Managers', dateAction: '2026-02-15' },
       { ordre: 2, role: 'Directeur', libelle: 'Validation directeur', statut: 'en_cours', responsable: 'Directeurs' },
@@ -355,16 +355,16 @@ export const campaigns: Campaign[] = [
     enveloppe: 620000,
     consomme: 598400,
     population: 3820,
-    entites: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'],
+    entites: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'],
     workflowEtapes: [
       { ordre: 1, role: 'Manager', libelle: 'Saisie des bonus', statut: 'valide', responsable: 'Managers', dateAction: '2026-02-01' },
       { ordre: 2, role: 'Directeur', libelle: 'Validation directeur', statut: 'valide', responsable: 'Directeurs', dateAction: '2026-02-15' },
       { ordre: 3, role: 'DRH', libelle: 'Validation DRH', statut: 'valide', responsable: 'DRH', dateAction: '2026-02-28' },
     ],
     bonusEntites: [
-      { entite: 'Entité 2 Services GIE', enveloppe: 310000, consomme: 298200, population: 1890, statut: 'valide', responsableRRH: 'Marie Lefort' },
-      { entite: 'Entité 3 France', enveloppe: 200000, consomme: 193600, population: 1240, statut: 'valide', responsableRRH: 'Jean Moriel' },
-      { entite: 'SOCORAIL', enveloppe: 110000, consomme: 106600, population: 690, statut: 'valide', responsableRRH: 'Anne Tissot' },
+      { entite: 'Groupe Horizon', enveloppe: 310000, consomme: 298200, population: 1890, statut: 'valide', responsableRRH: 'Marie Lefort' },
+      { entite: 'Horizon France', enveloppe: 200000, consomme: 193600, population: 1240, statut: 'valide', responsableRRH: 'Jean Moriel' },
+      { entite: 'Horizon Rail', enveloppe: 110000, consomme: 106600, population: 690, statut: 'valide', responsableRRH: 'Anne Tissot' },
     ],
     calendrierBonus: [
       { etape: 'Ouverture saisie managers', dateDebut: '2026-01-15', dateFin: '2026-02-01', responsable: 'Managers', statut: 'valide' },
@@ -383,7 +383,7 @@ export const campaigns: Campaign[] = [
     enveloppe: 180000,
     consomme: 0,
     population: 1250,
-    entites: ['Entité 2 Services GIE'],
+    entites: ['Groupe Horizon'],
     workflowEtapes: [
       { ordre: 1, role: 'Manager', libelle: 'Propositions avancement', statut: 'en_attente', responsable: 'Managers' },
       { ordre: 2, role: 'RRH', libelle: 'Validation RRH', statut: 'en_attente', responsable: 'RRH' },
@@ -449,58 +449,58 @@ export const propositions: Proposition[] = [
 ];
 
 export const auditLogs: AuditLog[] = [
-  { id: 'A001', timestamp: '2026-02-01T09:00:00', utilisateur: 'Sophie Dupont', role: 'DRH', action: 'Création campagne', entite: 'Entité 2 Services GIE', details: 'Campagne "Augmentations individuelles 2026" créée', categorie: 'general' },
+  { id: 'A001', timestamp: '2026-02-01T09:00:00', utilisateur: 'Sophie Dupont', role: 'DRH', action: 'Création campagne', entite: 'Groupe Horizon', details: 'Campagne "Augmentations individuelles 2026" créée', categorie: 'general' },
   { id: 'A002', timestamp: '2026-02-10T10:30:00', utilisateur: 'Philippe Rousseau', role: 'Manager', action: 'Proposition soumise', entite: 'Finance', details: 'Proposition P001 soumise pour E001 – +5,0%', categorie: 'general' },
   { id: 'A003', timestamp: '2026-02-12T14:15:00', utilisateur: 'Philippe Rousseau', role: 'Manager', action: 'Proposition soumise', entite: 'Finance', details: 'Proposition P002 soumise pour E002 – +4,0%', categorie: 'general' },
   { id: 'A004', timestamp: '2026-02-15T11:00:00', utilisateur: 'Philippe Rousseau', role: 'Directeur', action: 'Validation', entite: 'Finance', details: 'Proposition P001 validée par le directeur', categorie: 'general' },
-  { id: 'A005', timestamp: '2026-02-28T17:45:00', utilisateur: 'Sophie Dupont', role: 'DRH', action: 'Clôture campagne', entite: 'Entité 2 Services GIE', details: 'Campagne Bonus 2025 clôturée – 598 400 € consommés', categorie: 'general' },
+  { id: 'A005', timestamp: '2026-02-28T17:45:00', utilisateur: 'Sophie Dupont', role: 'DRH', action: 'Clôture campagne', entite: 'Groupe Horizon', details: 'Campagne Bonus 2025 clôturée – 598 400 € consommés', categorie: 'general' },
   { id: 'A006', timestamp: '2026-02-11T09:12:00', utilisateur: 'Claire Mercier', role: 'Manager', action: 'Proposition soumise', entite: 'RH', details: 'Proposition P003 soumise pour E003 – +4,0%', categorie: 'general' },
   { id: 'A007', timestamp: '2026-02-13T15:30:00', utilisateur: 'Eric Lambert', role: 'Manager', action: 'Proposition soumise', entite: 'IT', details: 'Propositions P004 et P005 soumises pour équipe IT', categorie: 'general' },
-  { id: 'A008', timestamp: '2026-02-18T10:00:00', utilisateur: 'Sophie Dupont', role: 'DRH', action: 'Ouverture campagne GPEC', entite: 'Entité 2 Services GIE', details: 'Campagne GPEC Juin 2026 paramétrée', categorie: 'general' },
-  { id: 'A009', timestamp: '2026-02-20T14:22:00', utilisateur: 'Marie Lefort', role: 'RRH', action: 'Consultation données', entite: 'Entité 3 France', details: 'Export liste collaborateurs Filiale B – 312 enregistrements', categorie: 'general' },
-  { id: 'A010', timestamp: '2026-03-01T09:00:00', utilisateur: 'System', role: 'SIRH', action: 'Import automatique', entite: 'Entité 2 Services GIE', details: 'Import SAP – mise à jour de 4 005 collaborateurs', categorie: 'general' },
+  { id: 'A008', timestamp: '2026-02-18T10:00:00', utilisateur: 'Sophie Dupont', role: 'DRH', action: 'Ouverture campagne GPEC', entite: 'Groupe Horizon', details: 'Campagne GPEC Juin 2026 paramétrée', categorie: 'general' },
+  { id: 'A009', timestamp: '2026-02-20T14:22:00', utilisateur: 'Marie Lefort', role: 'RRH', action: 'Consultation données', entite: 'Horizon France', details: 'Export liste collaborateurs Horizon France – 312 enregistrements', categorie: 'general' },
+  { id: 'A010', timestamp: '2026-03-01T09:00:00', utilisateur: 'System', role: 'SIRH', action: 'Import automatique', entite: 'Groupe Horizon', details: 'Import SAP – mise à jour de 4 005 collaborateurs', categorie: 'general' },
 ];
 
 export const auditParams: AuditParam[] = [
   { id: 'AP001', timestamp: '2026-02-01T09:05:00', utilisateur: 'Sophie Dupont', campagne: 'Augmentations individuelles 2026', champ: 'Enveloppe totale', ancienneValeur: '400 000 €', nouvelleValeur: '450 000 €' },
   { id: 'AP002', timestamp: '2026-02-01T09:10:00', utilisateur: 'Sophie Dupont', campagne: 'Augmentations individuelles 2026', champ: 'Date de fin', ancienneValeur: '2026-03-15', nouvelleValeur: '2026-03-31' },
-  { id: 'AP003', timestamp: '2026-02-03T14:00:00', utilisateur: 'Sophie Dupont', campagne: 'Augmentations individuelles 2026', champ: 'Entités incluses', ancienneValeur: 'Groupe A, Filiale B', nouvelleValeur: 'Groupe A, Filiale B, Filiale C' },
+  { id: 'AP003', timestamp: '2026-02-03T14:00:00', utilisateur: 'Sophie Dupont', campagne: 'Augmentations individuelles 2026', champ: 'Entités incluses', ancienneValeur: 'Groupe Horizon, Horizon France', nouvelleValeur: 'Groupe Horizon, Horizon France, Horizon Rail' },
   { id: 'AP004', timestamp: '2026-02-05T11:30:00', utilisateur: 'Thomas Renard', campagne: 'Augmentations individuelles 2026', champ: 'Règle éligibilité ancienneté', ancienneValeur: '12 mois', nouvelleValeur: '6 mois' },
-  { id: 'AP005', timestamp: '2026-01-10T10:00:00', utilisateur: 'Sophie Dupont', campagne: 'Campagne Bonus 2025', champ: 'Enveloppe Groupe A', ancienneValeur: '280 000 €', nouvelleValeur: '310 000 €' },
+  { id: 'AP005', timestamp: '2026-01-10T10:00:00', utilisateur: 'Sophie Dupont', campagne: 'Campagne Bonus 2025', champ: 'Enveloppe Groupe Horizon', ancienneValeur: '280 000 €', nouvelleValeur: '310 000 €' },
   { id: 'AP006', timestamp: '2026-05-20T15:00:00', utilisateur: 'Thomas Renard', campagne: 'GPEC par grade – Juin 2026', champ: 'Taux avancement P3 Éch.2', ancienneValeur: '3,0 %', nouvelleValeur: '2,5 %' },
 ];
 
 export const auditDroits: AuditDroit[] = [
-  { id: 'AD001', timestamp: '2025-12-01T10:00:00', operateur: 'Thomas Renard', utilisateurCible: 'Marie Lefort', ancienRole: 'Manager', nouveauRole: 'RRH', ancienPerimetre: 'Entité 3 France', nouveauPerimetre: 'Entité 3 France' },
-  { id: 'AD002', timestamp: '2026-01-05T09:00:00', operateur: 'Sophie Dupont', utilisateurCible: 'Jean Moriel', ancienRole: 'RRH', nouveauRole: 'RRH', ancienPerimetre: 'Entité 2 Services GIE', nouveauPerimetre: 'Entité 3 France' },
-  { id: 'AD003', timestamp: '2026-01-15T14:30:00', operateur: 'Thomas Renard', utilisateurCible: 'Eric Lambert', ancienRole: 'Manager', nouveauRole: 'Directeur', ancienPerimetre: 'IT – Filiale B', nouveauPerimetre: 'IT – Filiale B' },
-  { id: 'AD004', timestamp: '2026-02-10T11:00:00', operateur: 'Thomas Renard', utilisateurCible: 'Lucie Masson', ancienRole: '–', nouveauRole: 'Manager', ancienPerimetre: '–', nouveauPerimetre: 'Commercial – Groupe A' },
-  { id: 'AD005', timestamp: '2026-03-01T16:00:00', operateur: 'Sophie Dupont', utilisateurCible: 'Anne Tissot', ancienRole: 'Manager', nouveauRole: 'RRH', ancienPerimetre: 'Opérations – Filiale C', nouveauPerimetre: 'SOCORAIL' },
+  { id: 'AD001', timestamp: '2025-12-01T10:00:00', operateur: 'Thomas Renard', utilisateurCible: 'Marie Lefort', ancienRole: 'Manager', nouveauRole: 'RRH', ancienPerimetre: 'Horizon France', nouveauPerimetre: 'Horizon France' },
+  { id: 'AD002', timestamp: '2026-01-05T09:00:00', operateur: 'Sophie Dupont', utilisateurCible: 'Jean Moriel', ancienRole: 'RRH', nouveauRole: 'RRH', ancienPerimetre: 'Groupe Horizon', nouveauPerimetre: 'Horizon France' },
+  { id: 'AD003', timestamp: '2026-01-15T14:30:00', operateur: 'Thomas Renard', utilisateurCible: 'Eric Lambert', ancienRole: 'Manager', nouveauRole: 'Directeur', ancienPerimetre: 'IT – Horizon France', nouveauPerimetre: 'IT – Horizon France' },
+  { id: 'AD004', timestamp: '2026-02-10T11:00:00', operateur: 'Thomas Renard', utilisateurCible: 'Lucie Masson', ancienRole: '–', nouveauRole: 'Manager', ancienPerimetre: '–', nouveauPerimetre: 'Commercial – Groupe Horizon' },
+  { id: 'AD005', timestamp: '2026-03-01T16:00:00', operateur: 'Sophie Dupont', utilisateurCible: 'Anne Tissot', ancienRole: 'Manager', nouveauRole: 'RRH', ancienPerimetre: 'Opérations – Horizon Rail', nouveauPerimetre: 'Horizon Rail' },
 ];
 
 export const budgetEvents: BudgetEvent[] = [
-  { id: 'BE001', timestamp: '2026-02-01T09:00:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 2 Services GIE',   type: 'allocation',    montant: 450000, utilisateur: 'Sophie Dupont',  details: 'Enveloppe initiale allouée' },
-  { id: 'BE002', timestamp: '2026-02-10T10:30:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 2 Services GIE',   type: 'consommation',  montant: 2600,   utilisateur: 'Philippe Rousseau', details: 'Proposition P001 – Alice Martin +5,0%' },
-  { id: 'BE003', timestamp: '2026-02-11T09:12:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 2 Services GIE',   type: 'consommation',  montant: 1680,   utilisateur: 'Claire Mercier', details: 'Proposition P003 – Camille Leroy +4,0%' },
-  { id: 'BE004', timestamp: '2026-02-12T14:15:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 2 Services GIE',   type: 'consommation',  montant: 2320,   utilisateur: 'Philippe Rousseau', details: 'Proposition P002 – Luc Bernard +4,0%' },
-  { id: 'BE005', timestamp: '2026-02-13T15:30:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 3 France',  type: 'consommation',  montant: 6910,   utilisateur: 'Eric Lambert', details: 'Propositions P004+P005 – IT Filiale B' },
-  { id: 'BE006', timestamp: '2026-02-20T11:00:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 3 France',  type: 'alerte',        montant: 87500,  utilisateur: 'System', details: 'Alerte 80% enveloppe Filiale B atteinte' },
-  { id: 'BE007', timestamp: '2026-02-22T14:00:00', campagne: 'Augmentations individuelles 2026', entite: 'Entité 3 France',  type: 'arbitrage',     montant: 5000,   utilisateur: 'Sophie Dupont', details: 'Arbitrage DRH – enveloppe Filiale B augmentée de 5 000 €' },
-  { id: 'BE008', timestamp: '2026-01-15T09:00:00', campagne: 'Campagne Bonus 2025',              entite: 'Entité 2 Services GIE',   type: 'allocation',    montant: 620000, utilisateur: 'Sophie Dupont', details: 'Enveloppe bonus allouée (3 entités)' },
-  { id: 'BE009', timestamp: '2026-02-28T17:45:00', campagne: 'Campagne Bonus 2025',              entite: 'Entité 2 Services GIE',   type: 'consommation',  montant: 598400, utilisateur: 'System', details: 'Consolidation finale – 598 400 € distribués' },
+  { id: 'BE001', timestamp: '2026-02-01T09:00:00', campagne: 'Augmentations individuelles 2026', entite: 'Groupe Horizon',   type: 'allocation',    montant: 450000, utilisateur: 'Sophie Dupont',  details: 'Enveloppe initiale allouée' },
+  { id: 'BE002', timestamp: '2026-02-10T10:30:00', campagne: 'Augmentations individuelles 2026', entite: 'Groupe Horizon',   type: 'consommation',  montant: 2600,   utilisateur: 'Philippe Rousseau', details: 'Proposition P001 – Alice Martin +5,0%' },
+  { id: 'BE003', timestamp: '2026-02-11T09:12:00', campagne: 'Augmentations individuelles 2026', entite: 'Groupe Horizon',   type: 'consommation',  montant: 1680,   utilisateur: 'Claire Mercier', details: 'Proposition P003 – Camille Leroy +4,0%' },
+  { id: 'BE004', timestamp: '2026-02-12T14:15:00', campagne: 'Augmentations individuelles 2026', entite: 'Groupe Horizon',   type: 'consommation',  montant: 2320,   utilisateur: 'Philippe Rousseau', details: 'Proposition P002 – Luc Bernard +4,0%' },
+  { id: 'BE005', timestamp: '2026-02-13T15:30:00', campagne: 'Augmentations individuelles 2026', entite: 'Horizon France',  type: 'consommation',  montant: 6910,   utilisateur: 'Eric Lambert', details: 'Propositions P004+P005 – IT Horizon France' },
+  { id: 'BE006', timestamp: '2026-02-20T11:00:00', campagne: 'Augmentations individuelles 2026', entite: 'Horizon France',  type: 'alerte',        montant: 87500,  utilisateur: 'System', details: 'Alerte 80% enveloppe Horizon France atteinte' },
+  { id: 'BE007', timestamp: '2026-02-22T14:00:00', campagne: 'Augmentations individuelles 2026', entite: 'Horizon France',  type: 'arbitrage',     montant: 5000,   utilisateur: 'Sophie Dupont', details: 'Arbitrage DRH – enveloppe Horizon France augmentée de 5 000 €' },
+  { id: 'BE008', timestamp: '2026-01-15T09:00:00', campagne: 'Campagne Bonus 2025',              entite: 'Groupe Horizon',   type: 'allocation',    montant: 620000, utilisateur: 'Sophie Dupont', details: 'Enveloppe bonus allouée (3 entités)' },
+  { id: 'BE009', timestamp: '2026-02-28T17:45:00', campagne: 'Campagne Bonus 2025',              entite: 'Groupe Horizon',   type: 'consommation',  montant: 598400, utilisateur: 'System', details: 'Consolidation finale – 598 400 € distribués' },
 ];
 
 export const appUsers: AppUser[] = [
-  { id: 'U001', nom: 'Dupont',   prenom: 'Sophie',   email: 'sophie.dupont@groupea.fr',   role: 'DRH',      entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'], actif: true,  derniereConnexion: '2026-06-18T08:30:00' },
-  { id: 'U002', nom: 'Renard',   prenom: 'Thomas',   email: 'thomas.renard@groupea.fr',   role: 'SIRH',     entite: 'Entité 2 Services GIE', perimetre: ['Entité 2 Services GIE', 'Entité 3 France', 'SOCORAIL'], actif: true,  derniereConnexion: '2026-06-17T17:45:00' },
-  { id: 'U003', nom: 'Lefort',   prenom: 'Marie',    email: 'marie.lefort@groupea.fr',    role: 'RRH',      entite: 'Entité 3 France', perimetre: ['Entité 3 France'],                         actif: true,  derniereConnexion: '2026-06-18T09:00:00' },
-  { id: 'U004', nom: 'Moriel',   prenom: 'Jean',     email: 'jean.moriel@filialeB.fr',    role: 'RRH',      entite: 'Entité 3 France', perimetre: ['Entité 3 France'],                         actif: true,  derniereConnexion: '2026-06-15T11:20:00' },
-  { id: 'U005', nom: 'Tissot',   prenom: 'Anne',     email: 'anne.tissot@filialeC.fr',    role: 'RRH',      entite: 'SOCORAIL', perimetre: ['SOCORAIL'],                         actif: true,  derniereConnexion: '2026-06-16T14:10:00' },
-  { id: 'U006', nom: 'Rousseau', prenom: 'Philippe', email: 'ph.rousseau@groupea.fr',     role: 'Directeur', entite: 'Entité 2 Services GIE', perimetre: ['Finance – Groupe A'],                actif: true,  derniereConnexion: '2026-06-18T07:55:00' },
-  { id: 'U007', nom: 'Lambert',  prenom: 'Eric',     email: 'e.lambert@filialeB.fr',      role: 'Directeur', entite: 'Entité 3 France', perimetre: ['IT – Filiale B'],                   actif: true,  derniereConnexion: '2026-06-17T16:30:00' },
-  { id: 'U008', nom: 'Mercier',  prenom: 'Claire',   email: 'c.mercier@groupea.fr',       role: 'Manager',  entite: 'Entité 2 Services GIE', perimetre: ['RH – Groupe A'],                     actif: true,  derniereConnexion: '2026-06-18T08:10:00' },
-  { id: 'U009', nom: 'Masson',   prenom: 'Lucie',    email: 'l.masson@groupea.fr',        role: 'Manager',  entite: 'Entité 2 Services GIE', perimetre: ['Commercial – Groupe A'],              actif: true,  derniereConnexion: '2026-06-14T10:45:00' },
-  { id: 'U010', nom: 'Blanc',    prenom: 'David',    email: 'd.blanc@filialeC.fr',        role: 'Manager',  entite: 'SOCORAIL', perimetre: ['Opérations – Filiale C'],            actif: false, derniereConnexion: '2026-05-20T09:00:00' },
+  { id: 'U001', nom: 'Dupont',   prenom: 'Sophie',   email: 'sophie.dupont@horizon-group.fr',   role: 'DRH',      entite: 'Groupe Horizon', perimetre: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'], actif: true,  derniereConnexion: '2026-06-18T08:30:00' },
+  { id: 'U002', nom: 'Renard',   prenom: 'Thomas',   email: 'thomas.renard@horizon-group.fr',   role: 'SIRH',     entite: 'Groupe Horizon', perimetre: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'], actif: true,  derniereConnexion: '2026-06-17T17:45:00' },
+  { id: 'U003', nom: 'Lefort',   prenom: 'Marie',    email: 'marie.lefort@horizon-group.fr',    role: 'RRH',      entite: 'Horizon France', perimetre: ['Horizon France'],                         actif: true,  derniereConnexion: '2026-06-18T09:00:00' },
+  { id: 'U004', nom: 'Moriel',   prenom: 'Jean',     email: 'jean.moriel@horizon-france.fr',    role: 'RRH',      entite: 'Horizon France', perimetre: ['Horizon France'],                         actif: true,  derniereConnexion: '2026-06-15T11:20:00' },
+  { id: 'U005', nom: 'Tissot',   prenom: 'Anne',     email: 'anne.tissot@horizon-rail.fr',    role: 'RRH',      entite: 'Horizon Rail', perimetre: ['Horizon Rail'],                         actif: true,  derniereConnexion: '2026-06-16T14:10:00' },
+  { id: 'U006', nom: 'Rousseau', prenom: 'Philippe', email: 'ph.rousseau@horizon-group.fr',     role: 'Directeur', entite: 'Groupe Horizon', perimetre: ['Finance – Groupe Horizon'],                actif: true,  derniereConnexion: '2026-06-18T07:55:00' },
+  { id: 'U007', nom: 'Lambert',  prenom: 'Eric',     email: 'e.lambert@horizon-france.fr',      role: 'Directeur', entite: 'Horizon France', perimetre: ['IT – Horizon France'],                   actif: true,  derniereConnexion: '2026-06-17T16:30:00' },
+  { id: 'U008', nom: 'Mercier',  prenom: 'Claire',   email: 'c.mercier@horizon-group.fr',       role: 'Manager',  entite: 'Groupe Horizon', perimetre: ['RH – Groupe Horizon'],                     actif: true,  derniereConnexion: '2026-06-18T08:10:00' },
+  { id: 'U009', nom: 'Masson',   prenom: 'Lucie',    email: 'l.masson@horizon-group.fr',        role: 'Manager',  entite: 'Groupe Horizon', perimetre: ['Commercial – Groupe Horizon'],              actif: true,  derniereConnexion: '2026-06-14T10:45:00' },
+  { id: 'U010', nom: 'Blanc',    prenom: 'David',    email: 'd.blanc@horizon-rail.fr',        role: 'Manager',  entite: 'Horizon Rail', perimetre: ['Opérations – Horizon Rail'],            actif: false, derniereConnexion: '2026-05-20T09:00:00' },
 ];
 
 export type TaskUrgence = 'normale' | 'urgente' | 'critique';
@@ -562,8 +562,8 @@ export const workflowTasks: WorkflowTask[] = [
   },
   {
     id: 'T004',
-    titre: 'Alerte budget – Filiale B dépasse 80 %',
-    description: 'L\'enveloppe Augmentations de Filiale B est consommée à 88 %. Un arbitrage peut être nécessaire.',
+    titre: 'Alerte budget – Horizon France dépasse 80 %',
+    description: 'L\'enveloppe Augmentations de Horizon France est consommée à 88 %. Un arbitrage peut être nécessaire.',
     urgence: 'critique',
     echeance: '2026-03-10',
     lien: '/campaigns/C001',
@@ -575,14 +575,14 @@ export const workflowTasks: WorkflowTask[] = [
   // ── RRH ──────────────────────────────────────────────────────────────────
   {
     id: 'T005',
-    titre: 'Consolider les propositions – Filiale B',
-    description: 'Les managers de Filiale B ont terminé leur saisie. Consolidez et validez avant transmission au DRH.',
+    titre: 'Consolider les propositions – Horizon France',
+    description: 'Les managers de Horizon France ont terminé leur saisie. Consolidez et validez avant transmission au DRH.',
     urgence: 'urgente',
     echeance: '2026-03-20',
     lien: '/campaigns/C001',
     type: 'consolidation',
     rolesEligibles: ['RRH'],
-    entite: 'Entité 3 France',
+    entite: 'Horizon France',
     campaignId: 'C001',
     nbItems: 2,
   },
@@ -612,14 +612,14 @@ export const workflowTasks: WorkflowTask[] = [
   },
   {
     id: 'T008',
-    titre: 'Arbitrage budgétaire – Filiale B à 88 %',
-    description: 'L\'enveloppe Filiale B est quasi épuisée. Décidez d\'un abondement ou d\'un plafonnement.',
+    titre: 'Arbitrage budgétaire – Horizon France à 88 %',
+    description: 'L\'enveloppe Horizon France est quasi épuisée. Décidez d\'un abondement ou d\'un plafonnement.',
     urgence: 'critique',
     echeance: '2026-03-10',
     lien: '/audit',
     type: 'arbitrage',
     rolesEligibles: ['DRH'],
-    entite: 'Entité 3 France',
+    entite: 'Horizon France',
   },
   {
     id: 'T009',
@@ -687,9 +687,9 @@ export const genderEquityData = [
 ];
 
 export const budgetByEntity = [
-  { entite: 'Entité 2 Services GIE', enveloppe: 250000, consomme: 162000 },
-  { entite: 'Entité 3 France', enveloppe: 130000, consomme: 87500 },
-  { entite: 'SOCORAIL', enveloppe: 70000, consomme: 38000 },
+  { entite: 'Groupe Horizon', enveloppe: 250000, consomme: 162000 },
+  { entite: 'Horizon France', enveloppe: 130000, consomme: 87500 },
+  { entite: 'Horizon Rail', enveloppe: 70000, consomme: 38000 },
 ];
 
 export const campaignStatusLabels: Record<CampaignStatus, string> = {

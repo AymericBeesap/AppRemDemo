@@ -235,8 +235,8 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
     //   "definitionId": "remuneration.augmentation.approval.v1",
     //   "context": {
     //     "campaignId": "C001",
-    //     "campaignNom": "Augmentations 2026 – Groupe A",
-    //     "proposedBy": "c.mercier@groupea.fr",
+    //     "campaignNom": "Augmentations 2026 – Groupe Horizon",
+    //     "proposedBy": "c.mercier@horizon-group.fr",
     //     "enveloppeTotal": 85000,
     //     "enveloppeRestante": 62000
     //   }
@@ -272,7 +272,7 @@ export class BpaWorkflowEngine implements WorkflowEngineAdapter {
     //    Body : {
     //      "decision": "approve" | "reject" | "requestInfo",
     //      "context": {
-    //        "acteur": "c.mercier@groupea.fr",
+    //        "acteur": "c.mercier@horizon-group.fr",
     //        "commentaire": "...",
     //        "completedAt": "2026-06-22T10:00:00Z"
     //      }
