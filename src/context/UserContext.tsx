@@ -148,14 +148,14 @@ interface UserContextValue {
 const UserContext = createContext<UserContextValue | null>(null);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<SessionUser>(DEV_USERS[0]);
-  const [isLoading, setLoading] = useState(!DEV);
-
   // Détection FLP : sap.ushell est injecté par le Fiori Launchpad
   const isInFLP = typeof window !== 'undefined' && !!(window as any).sap?.ushell;
 
+  const [user, setUser]       = useState<SessionUser>(DEV_USERS[4]); // Manager par défaut
+  const [isLoading, setLoading] = useState(false);
+
   useEffect(() => {
-    if (DEV) return; // En DEV, le switcher de profil gère l'identité
+    if (!isInFLP) return; // Hors SAP Work Zone : pas d'auth BTP, switcher actif
 
     setLoading(true);
     loadBTPUser()
@@ -169,7 +169,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const switchUser = (id: string) => {
-    if (!DEV) return; // Interdit en production
+    if (isInFLP) return; // Interdit quand connecté à SAP Work Zone
     const found = DEV_USERS.find(u => u.id === id);
     if (found) setUser(found);
   };
@@ -177,7 +177,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   return (
     <UserContext.Provider value={{
       user,
-      allUsers: DEV ? DEV_USERS : [],
+      allUsers: !isInFLP ? DEV_USERS : [],
       switchUser,
       isLoading,
       isInFLP,
