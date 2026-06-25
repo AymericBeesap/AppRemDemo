@@ -130,9 +130,16 @@ function ManagerDashboard({ user }: { user: SessionUser }) {
 
 // ── Vue Directeur ─────────────────────────────────────────────────────────────
 
+// Max % conforme par grade (au-delà = hors norme, validation manuelle obligatoire)
+const MAX_PCT_CONFORME: Record<string, number> = {
+  P1: 6, P2: 5, P3: 5, P4: 4, M1: 4, M2: 3, D1: 3, D2: 3,
+};
+
 function DirecteurDashboard({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
   const [validatingId, setValidatingId] = useState<string | null>(null);
+  const [bulkValidated, setBulkValidated] = useState<Set<string>>(new Set());
+  const [bulkDoneMsg, setBulkDoneMsg] = useState<string | null>(null);
 
   const myTasks = workflowTasks
     .filter(t => t.rolesEligibles.includes(user.role))
@@ -148,8 +155,26 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
     })
   );
   const pendingValidation = propositions.filter(p =>
-    myPeriEmp.some(e => e.matricule === p.matricule) && (p.statut === 'en_attente' || p.statut === 'en_cours')
+    myPeriEmp.some(e => e.matricule === p.matricule) &&
+    (p.statut === 'en_attente' || p.statut === 'en_cours') &&
+    !bulkValidated.has(p.id)
   );
+
+  // Propositions conformes = % <= seuil grade et pas encore bulk-validées
+  const conformes = propositions.filter(p => {
+    if (bulkValidated.has(p.id)) return false;
+    if (!myPeriEmp.some(e => e.matricule === p.matricule)) return false;
+    if (p.statut !== 'en_attente' && p.statut !== 'en_cours') return false;
+    const emp = employees.find(e => e.matricule === p.matricule);
+    const max = emp ? (MAX_PCT_CONFORME[emp.grade] ?? 5) : 5;
+    return p.pourcentage <= max;
+  });
+
+  const handleBulkValidate = () => {
+    setBulkValidated(prev => new Set([...prev, ...conformes.map(p => p.id)]));
+    setBulkDoneMsg(`${conformes.length} proposition${conformes.length > 1 ? 's' : ''} validée${conformes.length > 1 ? 's' : ''} ✓`);
+    setTimeout(() => setBulkDoneMsg(null), 4000);
+  };
 
   return (
     <>
@@ -194,12 +219,31 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
         </div>
       )}
 
+      {/* Toast bulk validation */}
+      {bulkDoneMsg && (
+        <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success)', borderRadius: 'var(--radius)', padding: '.75rem 1.25rem', marginBottom: '1rem', fontSize: '.875rem', color: 'var(--success)', fontWeight: 600 }}>
+          {bulkDoneMsg}
+        </div>
+      )}
+
       {/* Propositions en attente de validation */}
-      {pendingValidation.length > 0 && (
+      {(pendingValidation.length > 0 || conformes.length > 0) && (
         <div className="section-card" style={{ marginBottom: '1.5rem' }}>
           <div className="section-card-header">
             <h2>Propositions à valider</h2>
-            <span className="badge badge-warning">{pendingValidation.length} en attente</span>
+            <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
+              {conformes.length > 0 && (
+                <button
+                  className="btn btn-sm btn-primary"
+                  style={{ background: 'var(--success)', borderColor: 'var(--success)', fontSize: '.8rem' }}
+                  onClick={handleBulkValidate}
+                  title={`Valider d'un coup les ${conformes.length} propositions dans les seuils autorisés par grade`}
+                >
+                  ✓ Tout valider les conformes ({conformes.length})
+                </button>
+              )}
+              <span className="badge badge-warning">{pendingValidation.length} en attente</span>
+            </div>
           </div>
           <table className="data-table">
             <thead>

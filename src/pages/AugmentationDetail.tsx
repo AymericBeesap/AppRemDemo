@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 // A FAIRE — Connexion SAP/CAP : remplacer les imports mockData :
 //   campaigns   → getCampaignById(id)             — CAP /Campaigns(id)?$expand=Population
@@ -13,6 +13,21 @@ import { useUser } from '../context/UserContext';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+
+// Grille de suggestions par grade (base + bonus ancienneté 0.08%/an, plafonné 0.8%)
+const SUGGESTION_BASE: Record<string, number> = {
+  P1: 3.0, P2: 2.5, P3: 2.0, P4: 1.8,
+  M1: 1.5, M2: 1.5, D1: 1.0, D2: 1.0,
+};
+const MAX_PCT_GRADE: Record<string, number> = {
+  P1: 7, P2: 6, P3: 5, P4: 5, M1: 4, M2: 4, D1: 3, D2: 3,
+};
+
+function getSuggestion(emp: Employee): number {
+  const base = SUGGESTION_BASE[emp.grade] ?? 2;
+  const ancBonus = Math.min(emp.anciennete * 0.08, 0.8);
+  return +(base + ancBonus).toFixed(1);
+}
 
 const statusBg: Record<WorkflowStatus, string> = {
   valide: 'badge badge-success',
@@ -743,7 +758,7 @@ export default function AugmentationDetail({ campaignId }: Props) {
   );
 }
 
-// ── Vue Manager : saisie inline ───────────────────────────────────────────────
+// ── Vue Manager : table inline avec suggestions ───────────────────────────────
 
 interface ManagerViewProps {
   campaign: ReturnType<typeof campaigns.find> & object;
@@ -758,9 +773,39 @@ function ManagerView({ campaign: c, myTeam, allProps, setProps, campaignId, user
   const navigate = useNavigate();
   if (!c) return null;
 
-  const nbSaisis = myTeam.filter(e => allProps.some(p => p.matricule === e.matricule)).length;
+  // % par employé (string pour l'input), initialisé depuis prop existante ou suggestion
+  const [pcts, setPcts] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    myTeam.forEach(emp => {
+      const prop = allProps.find(p => p.matricule === emp.matricule);
+      init[emp.matricule] = prop ? prop.pourcentage.toFixed(1) : getSuggestion(emp).toFixed(1);
+    });
+    return init;
+  });
+  const [comments, setComments] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    myTeam.forEach(emp => {
+      const prop = allProps.find(p => p.matricule === emp.matricule);
+      init[emp.matricule] = prop?.commentaire ?? '';
+    });
+    return init;
+  });
+  const [savedSet, setSavedSet] = useState<Set<string>>(() =>
+    new Set(allProps.filter(p => myTeam.some(e => e.matricule === p.matricule)).map(p => p.matricule))
+  );
+  const [showComment, setShowComment] = useState<Set<string>>(new Set());
 
-  const saveProp = (emp: Employee, pct: number, montant: number, commentaire: string) => {
+  const getPct = (mat: string) => Math.max(0, Math.min(15, parseFloat(pcts[mat] || '0') || 0));
+  const getMontant = (emp: Employee) => Math.round(emp.salaireActuel * getPct(emp.matricule) / 100);
+
+  const totalPropose = myTeam.reduce((s, emp) => s + getMontant(emp), 0);
+  const pctBudget = c.enveloppe > 0 ? (totalPropose / c.enveloppe) * 100 : 0;
+  const nbSaisis = savedSet.size;
+
+  const saveProp = (emp: Employee) => {
+    const pct = getPct(emp.matricule);
+    const montant = getMontant(emp);
+    const commentaire = comments[emp.matricule] ?? '';
     setProps(prev => {
       const existing = prev.find(p => p.matricule === emp.matricule);
       if (existing) {
@@ -776,10 +821,22 @@ function ManagerView({ campaign: c, myTeam, allProps, setProps, campaignId, user
         dateModification: new Date().toISOString().slice(0, 10),
       }];
     });
+    setSavedSet(prev => new Set([...prev, emp.matricule]));
   };
 
-  const deleteProp = (matricule: string) =>
-    setProps(prev => prev.filter(p => p.matricule !== matricule));
+  const saveAll = () => myTeam.forEach(emp => saveProp(emp));
+
+  const applyAllSuggestions = () => {
+    setPcts(prev => {
+      const next = { ...prev };
+      myTeam.forEach(emp => {
+        if (!savedSet.has(emp.matricule)) {
+          next[emp.matricule] = getSuggestion(emp).toFixed(1);
+        }
+      });
+      return next;
+    });
+  };
 
   return (
     <>
@@ -790,186 +847,211 @@ function ManagerView({ campaign: c, myTeam, allProps, setProps, campaignId, user
       <div className="page-header">
         <div>
           <h1>{c.nom}</h1>
-          <p>
-            Clôture le{' '}
-            <strong>{new Date(c.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
-          </p>
+          <p>Clôture le <strong>{new Date(c.dateFin).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-          <span style={{ fontSize: '.85rem', color: '#6b6b6b' }}>
-            {nbSaisis}/{myTeam.length} saisi{nbSaisis > 1 ? 's' : ''}
+          <span style={{ fontSize: '.85rem', color: 'var(--text-secondary)' }}>
+            {nbSaisis}/{myTeam.length} saisi{nbSaisis !== 1 ? 's' : ''}
           </span>
           {nbSaisis === myTeam.length && myTeam.length > 0
-            ? <span className="badge badge-success">✓ Toutes les propositions sont saisies</span>
+            ? <span className="badge badge-success">✓ Toutes saisies</span>
             : <span className="badge badge-success">Ouverte</span>}
         </div>
       </div>
 
-      <div style={{ marginBottom: '.5rem', fontSize: '.85rem', color: '#6b6b6b', fontWeight: 600 }}>
-        Mon équipe — {myTeam.length} collaborateur{myTeam.length !== 1 ? 's' : ''}
+      {/* Barre budget temps réel */}
+      <div className="section-card" style={{ padding: '1rem 1.5rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.82rem', marginBottom: '.35rem' }}>
+          <span style={{ fontWeight: 600 }}>Impact budget (temps réel)</span>
+          <span style={{ fontWeight: 700, color: pctBudget > 100 ? 'var(--error)' : pctBudget > 80 ? 'var(--warning)' : 'var(--primary)' }}>
+            {fmtEur(totalPropose)} / {fmtEur(c.enveloppe)} — {pctBudget.toFixed(1)}%
+          </span>
+        </div>
+        <div className="progress-bar-wrap" style={{ height: 8 }}>
+          <div className={`progress-bar-fill ${pctBudget > 100 ? 'danger' : pctBudget > 80 ? 'warning' : ''}`}
+            style={{ width: `${Math.min(pctBudget, 100)}%` }} />
+        </div>
+        {pctBudget > 100 && (
+          <div style={{ marginTop: '.4rem', fontSize: '.78rem', color: 'var(--error)' }}>
+            ⚠ Dépassement de l'enveloppe — réduisez certaines propositions avant de soumettre.
+          </div>
+        )}
+      </div>
+
+      {/* Toolbar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.75rem' }}>
+        <span style={{ fontSize: '.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+          Mon équipe — {myTeam.length} collaborateur{myTeam.length !== 1 ? 's' : ''}
+          <span style={{ fontSize: '.75rem', fontWeight: 400, marginLeft: '.5rem' }}>
+            · Suggestions basées sur grade + ancienneté · Tab ou Entrée pour avancer
+          </span>
+        </span>
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <button className="btn btn-ghost btn-sm" onClick={applyAllSuggestions}
+            title="Pré-remplit les champs non saisis avec la suggestion grade/ancienneté">
+            ✨ Suggestions
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={saveAll}>
+            ✓ Tout enregistrer
+          </button>
+        </div>
       </div>
 
       {myTeam.length === 0 ? (
-        <div style={{ background: '#fff', border: '1px dashed #c9c9c9', borderRadius: '.5rem', padding: '3rem', textAlign: 'center', color: '#a0a0a0' }}>
-          Aucun collaborateur éligible dans votre équipe pour cette campagne.
+        <div className="empty-state" style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px dashed var(--border)', minHeight: 200 }}>
+          <div className="empty-state-icon">👥</div>
+          <h3>Aucun collaborateur éligible</h3>
+          <p>Votre équipe ne compte pas de collaborateur éligible pour cette campagne.</p>
         </div>
       ) : (
-        myTeam.map(emp => (
-          <ManagerEmpCard
-            key={emp.matricule}
-            emp={emp}
-            prop={allProps.find(p => p.matricule === emp.matricule) ?? null}
-            onSave={(pct, montant, commentaire) => saveProp(emp, pct, montant, commentaire)}
-            onDelete={() => deleteProp(emp.matricule)}
-          />
-        ))
+        <div className="section-card" style={{ overflow: 'auto' }}>
+          <table className="data-table" style={{ minWidth: 860 }}>
+            <thead>
+              <tr>
+                <th>Collaborateur</th>
+                <th>Salaire actuel</th>
+                <th style={{ color: 'var(--primary)', fontSize: '.75rem' }}>✨ Suggestion</th>
+                <th style={{ minWidth: 150 }}>Augmentation %</th>
+                <th>+ Montant</th>
+                <th>Nouveau salaire</th>
+                <th style={{ width: 80 }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {myTeam.map((emp, idx) => {
+                const pct   = getPct(emp.matricule);
+                const montant = getMontant(emp);
+                const sugg  = getSuggestion(emp);
+                const maxPct = MAX_PCT_GRADE[emp.grade] ?? 5;
+                const isOver = pct > maxPct;
+                const isSaved = savedSet.has(emp.matricule);
+                const isDirty = isSaved && Math.abs(parseFloat(pcts[emp.matricule] || '0') - (allProps.find(p => p.matricule === emp.matricule)?.pourcentage ?? -1)) > 0.05;
+                const showCmt = showComment.has(emp.matricule);
+
+                return (
+                  <Fragment key={emp.matricule}>
+                    <tr style={{ background: isSaved && !isDirty ? '#f9fcf5' : '' }}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                          <div className="avatar" style={{ width: 30, height: 30, fontSize: '.7rem', flexShrink: 0, background: emp.genre === 'F' ? '#9c27b0' : 'var(--primary)' }}>
+                            {emp.prenom[0]}{emp.nom[0]}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: '.875rem' }}>{emp.prenom} {emp.nom}</div>
+                            <div style={{ fontSize: '.7rem', color: 'var(--text-secondary)' }}>{emp.grade} Éch.{emp.echelon} · {emp.anciennete} ans</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{fmtEur(emp.salaireActuel)}</td>
+                      <td>
+                        <button
+                          className="chip"
+                          style={{ cursor: 'pointer', border: '1px solid var(--primary)', color: 'var(--primary)', background: 'var(--primary-bg)', fontSize: '.78rem' }}
+                          onClick={() => {
+                            setPcts(p => ({ ...p, [emp.matricule]: sugg.toFixed(1) }));
+                            setSavedSet(prev => { const n = new Set(prev); n.delete(emp.matricule); return n; });
+                          }}
+                          title="Cliquer pour appliquer"
+                        >
+                          +{sugg.toFixed(1)}%
+                        </button>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.35rem' }}>
+                          <input
+                            id={`pct-${emp.matricule}`}
+                            type="number" min={0} max={15} step={0.1}
+                            value={pcts[emp.matricule] ?? ''}
+                            onChange={e => {
+                              setPcts(p => ({ ...p, [emp.matricule]: e.target.value }));
+                              setSavedSet(prev => { const n = new Set(prev); n.delete(emp.matricule); return n; });
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                saveProp(emp);
+                                const next = myTeam[idx + 1];
+                                if (next) setTimeout(() => document.getElementById(`pct-${next.matricule}`)?.focus(), 30);
+                              }
+                            }}
+                            style={{
+                              width: 70, padding: '.35rem .5rem',
+                              border: `1px solid ${isOver ? 'var(--error)' : 'var(--border)'}`,
+                              borderRadius: 'var(--radius-sm)', fontSize: '.9rem', textAlign: 'right',
+                              background: isOver ? '#fff5f5' : 'var(--surface)',
+                              outline: 'none', fontFamily: 'inherit',
+                            }}
+                          />
+                          <span style={{ fontSize: '.8rem', color: 'var(--text-secondary)' }}>%</span>
+                          {isOver && (
+                            <span style={{ fontSize: '.72rem', color: 'var(--error)', fontWeight: 600 }}
+                              title={`Seuil max ${maxPct}% pour ${emp.grade}`}>⚠{maxPct}%</span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ fontWeight: 600, color: pct > 0 ? 'var(--success)' : 'var(--text-disabled)' }}>
+                        {pct > 0 ? `+${fmtEur(montant)}` : '—'}
+                      </td>
+                      <td style={{ color: pct > 0 ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: pct > 0 ? 600 : 400, fontSize: '.875rem' }}>
+                        {fmtEur(emp.salaireActuel + montant)}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '.25rem', alignItems: 'center', justifyContent: 'flex-end' }}>
+                          <button
+                            className="btn btn-sm btn-ghost"
+                            style={{ fontSize: '.72rem', padding: '.2rem .35rem', color: showCmt ? 'var(--primary)' : 'var(--text-secondary)' }}
+                            onClick={() => setShowComment(prev => {
+                              const n = new Set(prev);
+                              n.has(emp.matricule) ? n.delete(emp.matricule) : n.add(emp.matricule);
+                              return n;
+                            })}
+                            title="Commentaire"
+                          >💬</button>
+                          {isSaved && !isDirty
+                            ? <span style={{ fontSize: '.8rem', color: 'var(--success)', fontWeight: 700, padding: '.2rem .35rem' }}>✓</span>
+                            : <button className="btn btn-primary btn-sm"
+                                style={{ fontSize: '.78rem', padding: '.2rem .55rem' }}
+                                onClick={() => saveProp(emp)}
+                                disabled={pct === 0}
+                              >OK</button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                    {showCmt && (
+                      <tr style={{ background: 'var(--surface-raised)' }}>
+                        <td colSpan={7} style={{ padding: '.4rem 1rem .6rem 3.75rem' }}>
+                          <textarea
+                            className="input-field"
+                            style={{ width: '100%', minHeight: 48, fontSize: '.82rem', resize: 'vertical', boxSizing: 'border-box' }}
+                            placeholder="Motif de la proposition (facultatif)…"
+                            value={comments[emp.matricule] ?? ''}
+                            onChange={e => setComments(c => ({ ...c, [emp.matricule]: e.target.value }))}
+                            autoFocus
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr style={{ background: 'var(--surface-raised)', fontWeight: 700 }}>
+                <td colSpan={2}>Total — {myTeam.length} collaborateurs</td>
+                <td />
+                <td style={{ fontSize: '.8rem', color: 'var(--text-secondary)' }}>
+                  {myTeam.length > 0 ? `moy. +${(myTeam.reduce((s, e) => s + getPct(e.matricule), 0) / myTeam.length).toFixed(2)}%` : ''}
+                </td>
+                <td style={{ color: 'var(--success)' }}>+{fmtEur(totalPropose)}</td>
+                <td>{fmtEur(myTeam.reduce((s, e) => s + e.salaireActuel, 0) + totalPropose)}</td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       )}
     </>
-  );
-}
-
-function ManagerEmpCard({
-  emp, prop, onSave, onDelete,
-}: {
-  emp: Employee;
-  prop: Proposition | null;
-  onSave: (pct: number, montant: number, commentaire: string) => void;
-  onDelete: () => void;
-}) {
-  const [pctStr, setPctStr] = useState(prop ? prop.pourcentage.toFixed(1) : '0');
-  const [commentaire, setCommentaire] = useState(prop?.commentaire ?? '');
-  const [dirty, setDirty] = useState(false);
-  const [saved, setSaved] = useState(!!prop);
-
-  const pct = Math.max(0, Math.min(15, parseFloat(pctStr) || 0));
-  const montant = Math.round(emp.salaireActuel * pct / 100);
-
-  const handlePct = (val: string) => { setPctStr(val); setDirty(true); setSaved(false); };
-  const handleComment = (val: string) => { setCommentaire(val); setDirty(true); setSaved(false); };
-
-  const handleSave = () => {
-    onSave(pct, montant, commentaire);
-    setDirty(false);
-    setSaved(true);
-  };
-
-  return (
-    <div className="section-card" style={{ marginBottom: '1rem' }}>
-      {/* En-tête */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '1rem 1.25rem', borderBottom: '1px solid #f0f0f0',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-          <div className="avatar" style={{ width: 42, height: 42, background: emp.genre === 'F' ? '#9c27b0' : '#0a6ed1' }}>
-            {emp.prenom[0]}{emp.nom[0]}
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '1rem' }}>{emp.prenom} {emp.nom}</div>
-            <div style={{ fontSize: '.78rem', color: '#6b6b6b' }}>
-              {emp.grade} Éch.{emp.echelon} · {emp.division} · {emp.anciennete} ans d'ancienneté
-            </div>
-          </div>
-        </div>
-        {saved && prop
-          ? prop.statut === 'valide'
-            ? <span className="badge badge-success">✓ Validé</span>
-            : <span className="badge badge-warning">En attente de validation</span>
-          : !saved && prop
-            ? <span className="badge badge-neutral">Modifié</span>
-            : <span className="badge badge-neutral">À saisir</span>}
-      </div>
-
-      {/* Corps */}
-      <div style={{ padding: '1.25rem' }}>
-
-        {/* Résumé chiffré */}
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontSize: '.72rem', color: '#6b6b6b', marginBottom: '.1rem' }}>Salaire actuel</div>
-            <div style={{ fontWeight: 700, fontSize: '1rem' }}>{fmtEur(emp.salaireActuel)}</div>
-          </div>
-          {pct > 0 && (
-            <>
-              <div>
-                <div style={{ fontSize: '.72rem', color: '#6b6b6b', marginBottom: '.1rem' }}>Augmentation</div>
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1b7e39' }}>+{fmtEur(montant)}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '.72rem', color: '#6b6b6b', marginBottom: '.1rem' }}>Nouveau salaire</div>
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0a6ed1' }}>{fmtEur(emp.salaireActuel + montant)}</div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Slider + inputs */}
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.82rem', marginBottom: '.4rem' }}>
-            <span style={{ color: '#6b6b6b' }}>Augmentation</span>
-            <span style={{ fontWeight: 700, color: pct > 0 ? '#0a6ed1' : '#a0a0a0' }}>{pct.toFixed(1)} %</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <input
-              type="range" min={0} max={15} step={0.1} value={pct}
-              onChange={e => handlePct(e.target.value)}
-              style={{ flex: 1, accentColor: '#0a6ed1' }}
-            />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.35rem' }}>
-              <input
-                type="number" min={0} max={15} step={0.1} value={pctStr}
-                onChange={e => handlePct(e.target.value)}
-                style={{ width: 60, padding: '.3rem .5rem', border: '1px solid #d5d5d5', borderRadius: '.375rem', fontSize: '.9rem', textAlign: 'right' }}
-              />
-              <span style={{ fontSize: '.85rem', color: '#6b6b6b' }}>%</span>
-              {pct > 0 && (
-                <span style={{ fontSize: '.82rem', color: '#6b6b6b', marginLeft: '.25rem' }}>
-                  = {fmtEur(montant)}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Commentaire */}
-        <textarea
-          placeholder="Motif de l'augmentation (facultatif)…"
-          value={commentaire}
-          onChange={e => handleComment(e.target.value)}
-          rows={2}
-          style={{
-            width: '100%', padding: '.5rem .75rem', border: '1px solid #d5d5d5',
-            borderRadius: '.375rem', fontSize: '.85rem', fontFamily: 'inherit',
-            resize: 'vertical', boxSizing: 'border-box', marginBottom: '1rem',
-            outline: 'none',
-          }}
-        />
-
-        {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {prop ? (
-            <button
-              onClick={onDelete}
-              style={{ fontSize: '.8rem', color: '#bb0000', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              Supprimer la proposition
-            </button>
-          ) : <div />}
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-            {saved && !dirty && (
-              <span style={{ fontSize: '.82rem', color: '#1b7e39', fontWeight: 600 }}>✓ Enregistré</span>
-            )}
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={handleSave}
-              disabled={pct === 0 && !prop}
-              style={{ opacity: pct === 0 && !prop ? .45 : 1 }}>
-              {prop && !dirty ? 'Modifier' : prop ? '✓ Mettre à jour' : '✓ Valider la proposition'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 
