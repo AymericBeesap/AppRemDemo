@@ -156,8 +156,14 @@ async function capFetch<T>(
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, public endpoint: string, public detail: string) {
+  status: number;
+  endpoint: string;
+  detail: string;
+  constructor(status: number, endpoint: string, detail: string) {
     super(`API ${status} — ${endpoint}: ${detail}`);
+    this.status = status;
+    this.endpoint = endpoint;
+    this.detail = detail;
   }
 }
 
@@ -300,7 +306,7 @@ export async function getCampaignById(id: string): Promise<Campaign | undefined>
   // GET /cap/odata/v4/RemunerationService/Campaigns('{id}')
   // $expand=workflowEtapes,bonusEntites,reglesGpec
   const result = await capFetch<CAPCampaign>(`${CAP_ENDPOINTS.CAMPAIGNS}('${id}')?$expand=workflowEtapes`);
-  return { ...result, id: result.ID, entites: JSON.parse(result.entites ?? '[]') } as Campaign;
+  return { ...result, id: result.ID, entites: JSON.parse(result.entites ?? '[]') } as unknown as Campaign;
 }
 
 export async function createCampaign(data: Omit<Campaign, 'id'>): Promise<Campaign> {
@@ -319,7 +325,7 @@ export async function createCampaign(data: Omit<Campaign, 'id'>): Promise<Campai
     ...data,
     entites: JSON.stringify(data.entites),
   });
-  return { ...result, id: result.ID, entites: data.entites } as Campaign;
+  return { ...result, id: result.ID, entites: data.entites } as unknown as Campaign;
 }
 
 export async function updateCampaign(id: string, patch: Partial<Campaign>): Promise<void> {

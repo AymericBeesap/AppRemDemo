@@ -96,7 +96,7 @@ async function fetchUserRoleFromCAP(): Promise<UserRoleResponse> {
 
 async function loadBTPUser(): Promise<SessionUser> {
   // Étape 1 : identité depuis FLP Shell (sap.ushell)
-  const ushell = window.sap?.ushell?.Container;
+  const ushell = (window as any).sap?.ushell?.Container;
   let id = '';
   let prenom = '';
   let nom = '';
@@ -152,7 +152,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isLoading, setLoading] = useState(!DEV);
 
   // Détection FLP : sap.ushell est injecté par le Fiori Launchpad
-  const isInFLP = typeof window !== 'undefined' && !!window.sap?.ushell;
+  const isInFLP = typeof window !== 'undefined' && !!(window as any).sap?.ushell;
 
   useEffect(() => {
     if (DEV) return; // En DEV, le switcher de profil gère l'identité
