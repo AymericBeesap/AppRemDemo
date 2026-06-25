@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { propositions, employees, campaigns } from '../data/mockData';
-// A FAIRE — Connexion CAP/BPA : remplacer les données mock par :
-//   getPropositionById(id) → CAP /Propositions(id)
-//   puis useWorkflow().completeTask() pour la validation BPA
+import { employees, campaigns } from '../data/mockData';
+import { useData } from '../context/DataContext';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -16,9 +14,10 @@ interface Props {
 
 export default function PropositionValidationDrawer({ propositionId, onClose, onValidated }: Props) {
   const navigate = useNavigate();
+  const { propositions, validateProposition, rejectProposition } = useData();
   const [commentaire, setCommentaire] = useState('');
   const [showComment, setShowComment] = useState(false);
-  const [action, setAction] = useState<'valider' | 'rejeter' | null>(null);
+  const [actionPending, setActionPending] = useState<'valider' | 'rejeter' | null>(null);
 
   const proposition = propositionId ? propositions.find(p => p.id === propositionId) : null;
   const employee    = proposition ? employees.find(e => e.matricule === proposition.matricule) : null;
@@ -30,14 +29,18 @@ export default function PropositionValidationDrawer({ propositionId, onClose, on
   const daysLeft = Math.ceil((new Date(campaign.dateFin).getTime() - Date.now()) / 86400000);
 
   function handleAction(act: 'valider' | 'rejeter') {
-    // A FAIRE — Connexion BPA : appeler useWorkflow().completeTask() ici
-    setAction(act);
+    setActionPending(act);
+    if (act === 'valider') {
+      validateProposition(proposition!.id);
+    } else {
+      rejectProposition(proposition!.id);
+    }
     setTimeout(() => {
       onValidated();
-      setAction(null);
+      setActionPending(null);
       setCommentaire('');
       setShowComment(false);
-    }, 600);
+    }, 400);
   }
 
   return (
@@ -119,7 +122,7 @@ export default function PropositionValidationDrawer({ propositionId, onClose, on
           </div>
 
           {/* Échéance campagne */}
-          {daysLeft <= 7 && (
+          {daysLeft > 0 && daysLeft <= 7 && (
             <div className="alert alert-warning" style={{ fontSize: '.82rem' }}>
               ⏰ Campagne se clôture dans <strong>{daysLeft} jour{daysLeft > 1 ? 's' : ''}</strong>
             </div>
@@ -129,7 +132,7 @@ export default function PropositionValidationDrawer({ propositionId, onClose, on
           {showComment && (
             <div>
               <label style={{ fontSize: '.82rem', fontWeight: 600, marginBottom: '.3rem', display: 'block' }}>
-                Commentaire {action === 'rejeter' ? '(obligatoire)' : '(facultatif)'}
+                Commentaire {actionPending === 'rejeter' ? '(obligatoire)' : '(facultatif)'}
               </label>
               <textarea
                 className="input-field"
@@ -149,8 +152,8 @@ export default function PropositionValidationDrawer({ propositionId, onClose, on
             <button
               className="btn btn-ghost"
               style={{ flex: 1, color: 'var(--error)', borderColor: 'var(--error-border)' }}
-              onClick={() => { setShowComment(true); setAction('rejeter'); }}
-              disabled={action !== null}
+              onClick={() => { setShowComment(true); setActionPending('rejeter'); }}
+              disabled={actionPending !== null}
             >
               ✕ Rejeter
             </button>
@@ -158,15 +161,15 @@ export default function PropositionValidationDrawer({ propositionId, onClose, on
               className="btn btn-primary"
               style={{ flex: 2, background: 'var(--success)', borderColor: 'var(--success)' }}
               onClick={() => {
-                if (!showComment) { setShowComment(true); setAction('valider'); }
+                if (!showComment) { setShowComment(true); setActionPending('valider'); }
                 else handleAction('valider');
               }}
-              disabled={action !== null}
+              disabled={actionPending !== null}
             >
-              {action === 'valider' ? '✓ Validation en cours…' : '✓ Valider la proposition'}
+              {actionPending === 'valider' ? '✓ Validation en cours…' : '✓ Valider la proposition'}
             </button>
           </div>
-          {showComment && action === 'rejeter' && (
+          {showComment && actionPending === 'rejeter' && (
             <button
               className="btn btn-danger"
               style={{ width: '100%' }}

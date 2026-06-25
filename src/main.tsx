@@ -9,6 +9,7 @@ import './index.css'
 import App from './App.tsx'
 import { UserProvider } from './context/UserContext.tsx'
 import { WorkflowProvider } from './context/WorkflowContext.tsx'
+import { DataProvider } from './context/DataContext.tsx'
 
 // QueryClient global — configuration optimisée BTP :
 // - staleTime 30s : évite les refetch trop fréquents sur des données RH peu volatiles
@@ -31,7 +32,9 @@ createRoot(document.getElementById('root')!).render(
         <ThemeProvider>
           <UserProvider>
             <WorkflowProvider>
-              <App />
+              <DataProvider>
+                <App />
+              </DataProvider>
             </WorkflowProvider>
           </UserProvider>
         </ThemeProvider>

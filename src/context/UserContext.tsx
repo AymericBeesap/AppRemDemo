@@ -53,7 +53,7 @@ const DEV_USERS: SessionUser[] = [
   { id: 'U001', prenom: 'Sophie',   nom: 'Dupont',   role: 'DRH',       entite: 'Groupe Horizon', perimetre: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'],    email: 'sophie.dupont@horizon-group.fr' },
   { id: 'U002', prenom: 'Thomas',   nom: 'Renard',   role: 'SIRH',      entite: 'Groupe Horizon', perimetre: ['Groupe Horizon', 'Horizon France', 'Horizon Rail'],    email: 'thomas.renard@horizon-group.fr' },
   { id: 'U003', prenom: 'Marie',    nom: 'Lefort',   role: 'RRH',       entite: 'Horizon France',        perimetre: ['Horizon France'],                                        email: 'marie.lefort@horizon-france.fr' },
-  { id: 'U006', prenom: 'Philippe', nom: 'Rousseau', role: 'Directeur', entite: 'Groupe Horizon', perimetre: ['Finance – Groupe Horizon'], matricule: 'E010',     email: 'ph.rousseau@horizon-group.fr' },
+  { id: 'U006', prenom: 'Philippe', nom: 'Rousseau', role: 'Directeur', entite: 'Groupe Horizon', perimetre: ['Groupe Horizon'], matricule: 'E010',     email: 'ph.rousseau@horizon-group.fr' },
   { id: 'U008', prenom: 'Claire',   nom: 'Mercier',  role: 'Manager',   entite: 'Groupe Horizon', perimetre: ['RH – Groupe Horizon'],      matricule: 'E011',     email: 'c.mercier@horizon-group.fr' },
 ];
 

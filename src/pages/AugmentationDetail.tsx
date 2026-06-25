@@ -6,10 +6,11 @@ import { useNavigate } from 'react-router-dom';
 //   propositions → getPropositions(campaignId)    — CAP /Propositions?$filter=campaignId eq '${id}'
 // Pour upsertProposition() et deleteProposition() : voir src/services/api.ts
 // A FAIRE — Connexion Workflow : completeTask() passe par WorkflowContext (déjà branché)
-import { campaigns, employees, propositions as initialProps, workflowStatusLabels, type Proposition, type WorkflowStatus, type Employee } from '../data/mockData';
+import { campaigns, employees, workflowStatusLabels, type Proposition, type WorkflowStatus, type Employee } from '../data/mockData';
 import PropositionForm from '../components/PropositionForm';
 import { useWorkflow } from '../context/WorkflowContext';
 import { useUser } from '../context/UserContext';
+import { useData } from '../context/DataContext';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -48,8 +49,9 @@ export default function AugmentationDetail({ campaignId }: Props) {
   const campaign = campaigns.find(c => c.id === campaignId)!;
   const { getStepsView, completeTask } = useWorkflow();
   const { user } = useUser();
+  const { propositions: allContextProps, saveProposition, removeProposition } = useData();
 
-  const [props, setProps] = useState<Proposition[]>(initialProps.filter(p => p.campaignId === campaignId));
+  const props = allContextProps.filter(p => p.campaignId === campaignId);
   const [workflowSteps, setWorkflowSteps] = useState<import('../types/workflow').WorkflowStepView[]>([]);
   const [formOpen, setFormOpen] = useState(false);
 
@@ -62,11 +64,7 @@ export default function AugmentationDetail({ campaignId }: Props) {
 
   // ── Ajustements population ───────────────────────────────────────────────
   const [adjustments, setAdjustments] = useState<Record<string, number>>(() =>
-    Object.fromEntries(
-      initialProps
-        .filter(p => p.campaignId === campaignId)
-        .map(p => [p.matricule, p.pourcentage])
-    )
+    Object.fromEntries(props.map(p => [p.matricule, p.pourcentage]))
   );
   const [globalPct, setGlobalPct] = useState(0);
   const [adjMode, setAdjMode] = useState<AdjMode>('pct');
@@ -118,27 +116,24 @@ export default function AugmentationDetail({ campaignId }: Props) {
   };
 
   const convertToPropositions = () => {
-    const newProps = adjEligibles
+    adjEligibles
       .filter(e => (adjustments[e.matricule] ?? 0) > 0)
-      .map(emp => {
+      .forEach(emp => {
         const pctAdj = adjustments[emp.matricule] ?? 0;
         const montant = Math.round(emp.salaireActuel * pctAdj / 100);
         const existing = props.find(p => p.matricule === emp.matricule);
         if (existing) {
-          return { ...existing, montant, pourcentage: pctAdj, dateModification: new Date().toISOString().slice(0, 10) };
+          saveProposition({ ...existing, montant, pourcentage: pctAdj, dateModification: new Date().toISOString().slice(0, 10) });
+        } else {
+          saveProposition({
+            id: `P_ADJ_${emp.matricule}`, campaignId, matricule: emp.matricule,
+            montant, pourcentage: pctAdj, commentaire: 'Ajustement global population',
+            statut: 'en_cours' as WorkflowStatus, auteur: `${user.prenom} ${user.nom}`,
+            dateCreation: new Date().toISOString().slice(0, 10),
+            dateModification: new Date().toISOString().slice(0, 10),
+          });
         }
-        return {
-          id: `P_ADJ_${emp.matricule}`, campaignId, matricule: emp.matricule,
-          montant, pourcentage: pctAdj, commentaire: 'Ajustement global population',
-          statut: 'en_cours' as WorkflowStatus, auteur: `${user.prenom} ${user.nom}`,
-          dateCreation: new Date().toISOString().slice(0, 10),
-          dateModification: new Date().toISOString().slice(0, 10),
-        };
       });
-    setProps(prev => {
-      const kept = prev.filter(p => !adjEligibles.some(e => e.matricule === p.matricule));
-      return [...kept, ...newProps];
-    });
     setViewMode('propositions');
   };
 
@@ -146,21 +141,18 @@ export default function AugmentationDetail({ campaignId }: Props) {
 
   const handleSubmit = (data: { montant: number; pourcentage: number; commentaire: string }) => {
     if (!selectedEmp) return;
-    setProps(prev => {
-      const existing = prev.find(p => p.matricule === selectedEmp);
-      if (existing) {
-        return prev.map(p => p.matricule === selectedEmp
-          ? { ...p, ...data, dateModification: new Date().toISOString().slice(0, 10) }
-          : p);
-      }
-      return [...prev, {
+    const existing = props.find(p => p.matricule === selectedEmp);
+    if (existing) {
+      saveProposition({ ...existing, ...data, dateModification: new Date().toISOString().slice(0, 10) });
+    } else {
+      saveProposition({
         id: `P_NEW_${Date.now()}`, campaignId, matricule: selectedEmp,
-        statut: 'en_cours', auteur: 'Sophie Dupont',
+        statut: 'en_cours' as WorkflowStatus, auteur: `${user.prenom} ${user.nom}`,
         dateCreation: new Date().toISOString().slice(0, 10),
         dateModification: new Date().toISOString().slice(0, 10),
         ...data,
-      }];
-    });
+      });
+    }
   };
 
   // ── Vue Manager : retour anticipé avant le rendu complexe ────────────────
@@ -172,8 +164,6 @@ export default function AugmentationDetail({ campaignId }: Props) {
       <ManagerView
         campaign={campaign}
         myTeam={myTeam}
-        allProps={props}
-        setProps={setProps}
         campaignId={campaignId}
         userName={`${user.prenom} ${user.nom}`}
       />
@@ -637,7 +627,7 @@ export default function AugmentationDetail({ campaignId }: Props) {
                         <div style={{ padding: '0 1.25rem 1.25rem', display: 'flex', gap: '.5rem' }}>
                           <button className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => handleOpen(emp.matricule)}>✏️ Modifier</button>
                           <button className="btn btn-ghost btn-sm" style={{ flex: 1, color: '#bb0000', borderColor: '#bb0000' }}
-                            onClick={() => setProps(p => p.filter(x => x.matricule !== emp.matricule))}>
+                            onClick={() => { const p = props.find(x => x.matricule === emp.matricule); if (p) removeProposition(p.id); }}>
                             🗑 Supprimer
                           </button>
                         </div>
@@ -763,14 +753,15 @@ export default function AugmentationDetail({ campaignId }: Props) {
 interface ManagerViewProps {
   campaign: ReturnType<typeof campaigns.find> & object;
   myTeam: Employee[];
-  allProps: Proposition[];
-  setProps: React.Dispatch<React.SetStateAction<Proposition[]>>;
   campaignId: string;
   userName: string;
 }
 
-function ManagerView({ campaign: c, myTeam, allProps, setProps, campaignId, userName }: ManagerViewProps) {
+function ManagerView({ campaign: c, myTeam, campaignId, userName }: ManagerViewProps) {
   const navigate = useNavigate();
+  const { propositions: allCtxProps, saveProposition } = useData();
+  const allProps = allCtxProps.filter(p => p.campaignId === campaignId);
+
   if (!c) return null;
 
   // % par employé (string pour l'input), initialisé depuis prop existante ou suggestion
@@ -806,21 +797,18 @@ function ManagerView({ campaign: c, myTeam, allProps, setProps, campaignId, user
     const pct = getPct(emp.matricule);
     const montant = getMontant(emp);
     const commentaire = comments[emp.matricule] ?? '';
-    setProps(prev => {
-      const existing = prev.find(p => p.matricule === emp.matricule);
-      if (existing) {
-        return prev.map(p => p.matricule === emp.matricule
-          ? { ...p, montant, pourcentage: pct, commentaire, dateModification: new Date().toISOString().slice(0, 10) }
-          : p);
-      }
-      return [...prev, {
-        id: `P_MGR_${emp.matricule}`, campaignId, matricule: emp.matricule,
+    const existing = allProps.find(p => p.matricule === emp.matricule);
+    if (existing) {
+      saveProposition({ ...existing, montant, pourcentage: pct, commentaire, dateModification: new Date().toISOString().slice(0, 10) });
+    } else {
+      saveProposition({
+        id: `P_MGR_${emp.matricule}_${Date.now()}`, campaignId, matricule: emp.matricule,
         montant, pourcentage: pct, commentaire,
         statut: 'en_cours' as WorkflowStatus, auteur: userName,
         dateCreation: new Date().toISOString().slice(0, 10),
         dateModification: new Date().toISOString().slice(0, 10),
-      }];
-    });
+      });
+    }
     setSavedSet(prev => new Set([...prev, emp.matricule]));
   };
 

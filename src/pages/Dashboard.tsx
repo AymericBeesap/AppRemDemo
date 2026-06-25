@@ -6,7 +6,8 @@
 //   budgetByEntity → getBudgetByEntity() — CAP /BudgetEvents (agrégé par entité)
 //   workflowTasks → getPendingTasks() — BPA /task-instances?status=READY (via WorkflowContext)
 // Utiliser React Query (useQuery) ou SWR pour la gestion du cache et du loading state.
-import { campaigns, employees, propositions, auditLogs, budgetByEntity, campaignStatusLabels, campaignTypeLabels, workflowTasks } from '../data/mockData';
+import { campaigns, employees, auditLogs, budgetByEntity, campaignStatusLabels, campaignTypeLabels, workflowTasks } from '../data/mockData';
+import { useData } from '../context/DataContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -56,6 +57,7 @@ function getMyTeam(user: SessionUser): Employee[] {
 
 function ManagerDashboard({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
+  const { propositions } = useData();
   const myTeam = getMyTeam(user);
 
   const openCampaign = campaigns.find(
@@ -137,8 +139,8 @@ const MAX_PCT_CONFORME: Record<string, number> = {
 
 function DirecteurDashboard({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
+  const { propositions, validateProposition } = useData();
   const [validatingId, setValidatingId] = useState<string | null>(null);
-  const [bulkValidated, setBulkValidated] = useState<Set<string>>(new Set());
   const [bulkDoneMsg, setBulkDoneMsg] = useState<string | null>(null);
 
   const myTasks = workflowTasks
@@ -156,13 +158,11 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
   );
   const pendingValidation = propositions.filter(p =>
     myPeriEmp.some(e => e.matricule === p.matricule) &&
-    (p.statut === 'en_attente' || p.statut === 'en_cours') &&
-    !bulkValidated.has(p.id)
+    (p.statut === 'en_attente' || p.statut === 'en_cours')
   );
 
-  // Propositions conformes = % <= seuil grade et pas encore bulk-validées
+  // Propositions conformes = % <= seuil grade
   const conformes = propositions.filter(p => {
-    if (bulkValidated.has(p.id)) return false;
     if (!myPeriEmp.some(e => e.matricule === p.matricule)) return false;
     if (p.statut !== 'en_attente' && p.statut !== 'en_cours') return false;
     const emp = employees.find(e => e.matricule === p.matricule);
@@ -171,7 +171,7 @@ function DirecteurDashboard({ user }: { user: SessionUser }) {
   });
 
   const handleBulkValidate = () => {
-    setBulkValidated(prev => new Set([...prev, ...conformes.map(p => p.id)]));
+    conformes.forEach(p => validateProposition(p.id));
     setBulkDoneMsg(`${conformes.length} proposition${conformes.length > 1 ? 's' : ''} validée${conformes.length > 1 ? 's' : ''} ✓`);
     setTimeout(() => setBulkDoneMsg(null), 4000);
   };
@@ -380,6 +380,7 @@ function DirectiveBanner() {
 
 function AdminDashboard({ user }: { user: SessionUser }) {
   const navigate = useNavigate();
+  const { propositions } = useData();
 
   const totalEnveloppe = campaigns.reduce((s, c) => s + c.enveloppe, 0);
   const totalConsomme = campaigns.filter(c => c.statut !== 'brouillon').reduce((s, c) => s + c.consomme, 0);
