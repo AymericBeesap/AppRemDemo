@@ -59,7 +59,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const { user, allUsers, switchUser } = useUser();
   const navigate = useNavigate();
   const navItems = NAV_ITEMS.filter(item => item.roles.includes(user.role));
-  const showSidebar = navItems.length > 1;
+  const showSidebar = true;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
